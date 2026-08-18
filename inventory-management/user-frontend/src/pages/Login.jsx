@@ -56,7 +56,7 @@ function Login() {
         JSON.stringify(adminUser)
       );
 
-      window.location.href = "http://localhost:5174/";
+      window.location.href = "/";
 
       return;
     }
@@ -69,7 +69,7 @@ function Login() {
       setLoading(true);
 
       const response = await fetch(
-        "http://localhost:5000/api/auth/login",
+        "https://strong-curiosity-production.up.railway.app/api/auth/login",
         {
           method: "POST",
           headers: {
@@ -120,18 +120,6 @@ function Login() {
       // SAVE LOGIN LOG TO SUPABASE
       // =========================
 
-      try {
-        await fetch("http://localhost:5000/api/logs", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            user_id: data.user.id,
-            email: data.user.email,
-          }),
-        });
-      } catch (logErr) {
-        console.error("Failed to save login log:", logErr);
-      }
 
       // =========================
       // REMEMBER ME

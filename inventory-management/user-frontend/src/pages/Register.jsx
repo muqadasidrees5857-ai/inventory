@@ -53,7 +53,7 @@ function Register() {
     try {
       // Send registration data to backend
       const response = await fetch(
-        "http://localhost:5000/api/auth/register",
+        "https://strong-curiosity-production.up.railway.app/api/auth/register",
         {
           method: "POST",
           headers: {
