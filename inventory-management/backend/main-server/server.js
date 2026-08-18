@@ -1,3 +1,4 @@
+
 const express = require("express");
 const cors = require("cors");
 
@@ -55,6 +56,7 @@ app.post("/api/auth/register", async (req, res, next) => {
 
     if (error) {
       console.error("Supabase Register Error:", error);
+
       return res.status(400).json({
         success: false,
         message: error.message,
@@ -89,13 +91,18 @@ app.post("/api/auth/login", async (req, res, next) => {
 
     const cleanEmail = email.trim().toLowerCase();
 
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email: cleanEmail,
-      password: password,
-    });
+    const { data, error } =
+      await supabase.auth.signInWithPassword({
+        email: cleanEmail,
+        password: password,
+      });
 
     if (error) {
-      console.error("Supabase Login Error:", error.message);
+      console.error(
+        "Supabase Login Error:",
+        error.message
+      );
+
       return res.status(401).json({
         success: false,
         message: "Invalid email or password.",
@@ -104,7 +111,10 @@ app.post("/api/auth/login", async (req, res, next) => {
 
     const user = data.user;
 
-    const { data: loginLog, error: loginLogError } = await supabase
+    const {
+      data: loginLog,
+      error: loginLogError,
+    } = await supabase
       .from("login_logs")
       .insert([
         {
@@ -115,9 +125,15 @@ app.post("/api/auth/login", async (req, res, next) => {
       .select();
 
     if (loginLogError) {
-      console.error("LOGIN LOG INSERT ERROR:", loginLogError.message);
+      console.error(
+        "LOGIN LOG INSERT ERROR:",
+        loginLogError.message
+      );
     } else {
-      console.log("LOGIN LOG SAVED SUCCESSFULLY:", loginLog);
+      console.log(
+        "LOGIN LOG SAVED SUCCESSFULLY:",
+        loginLog
+      );
     }
 
     res.status(200).json({
@@ -133,7 +149,7 @@ app.post("/api/auth/login", async (req, res, next) => {
 });
 
 // =====================================================
-// ORDERS ROUTES (CREATE & FETCH ORDERS)
+// ORDERS ROUTES
 // =====================================================
 
 // Place Order
@@ -151,27 +167,31 @@ app.post("/api/orders", async (req, res, next) => {
       userEmail,
     } = req.body;
 
-    const { data, error } = await supabase.from("orders").insert([
-      {
-        user_id: userId || null,
-        user_email: userEmail || null,
-        customer_name: customer?.name,
-        customer_phone: customer?.phone,
-        customer_address: customer?.address,
-        customer_city: customer?.city,
-        items: items,
-        subtotal: subtotal,
-        delivery_fee: delivery,
-        total_amount: total,
-        payment_method: paymentMethod, // Maps 'paymentMethod' to Supabase column
-        payment_details: paymentDetails,
-        status: "Pending",
-        created_at: new Date().toISOString(),
-      },
-    ]).select();
+    const { data, error } = await supabase
+      .from("orders")
+      .insert([
+        {
+          user_id: userId || null,
+          user_email: userEmail || null,
+          customer_name: customer?.name,
+          customer_phone: customer?.phone,
+          customer_address: customer?.address,
+          customer_city: customer?.city,
+          items: items,
+          subtotal: subtotal,
+          delivery_fee: delivery,
+          total_amount: total,
+          payment_method: paymentMethod,
+          payment_details: paymentDetails,
+          status: "Pending",
+          created_at: new Date().toISOString(),
+        },
+      ])
+      .select();
 
     if (error) {
       console.error("Order Save Error:", error);
+
       return res.status(400).json({
         success: false,
         message: error.message,
@@ -184,7 +204,11 @@ app.post("/api/orders", async (req, res, next) => {
       order: data[0],
     });
   } catch (error) {
-    console.error("Order Route Exception:", error);
+    console.error(
+      "Order Route Exception:",
+      error
+    );
+
     next(error);
   }
 });
@@ -195,7 +219,9 @@ app.get("/api/orders", async (req, res, next) => {
     const { data, error } = await supabase
       .from("orders")
       .select("*")
-      .order("created_at", { ascending: false });
+      .order("created_at", {
+        ascending: false,
+      });
 
     if (error) {
       return res.status(400).json({
@@ -214,15 +240,22 @@ app.get("/api/orders", async (req, res, next) => {
 });
 
 // =====================================================
-// GET PRODUCTS (PROXY TO PORT 5001)
+// GET PRODUCTS
+// PROXY TO RAILWAY PRODUCT SERVER
 // =====================================================
 
 app.get("/api/products", async (req, res, next) => {
   try {
-    const response = await fetch("http://localhost:5001/api/products");
+    const response = await fetch(
+      "https://strong-curiosity-production.up.railway.app/api/products"
+    );
+
     const data = await response.json();
 
-    console.log("PRODUCT RESPONSE FROM 5001:", data);
+    console.log(
+      "PRODUCT RESPONSE FROM PRODUCT SERVER:",
+      data
+    );
 
     res.status(response.status).json(data);
   } catch (error) {
@@ -231,12 +264,15 @@ app.get("/api/products", async (req, res, next) => {
 });
 
 // =====================================================
-// GET STOCK (PROXY TO PORT 5002)
+// GET STOCK
 // =====================================================
 
 app.get("/api/stock", async (req, res, next) => {
   try {
-    const response = await fetch("http://localhost:5002/api/stock");
+    const response = await fetch(
+      "http://localhost:5002/api/stock"
+    );
+
     const data = await response.json();
 
     res.status(response.status).json(data);
@@ -246,19 +282,25 @@ app.get("/api/stock", async (req, res, next) => {
 });
 
 // =====================================================
-// GET LOW STOCK (PROXY TO PORT 5002)
+// GET LOW STOCK
 // =====================================================
 
-app.get("/api/stock/low", async (req, res, next) => {
-  try {
-    const response = await fetch("http://localhost:5002/api/stock/low");
-    const data = await response.json();
+app.get(
+  "/api/stock/low",
+  async (req, res, next) => {
+    try {
+      const response = await fetch(
+        "http://localhost:5002/api/stock/low"
+      );
 
-    res.status(response.status).json(data);
-  } catch (error) {
-    next(error);
+      const data = await response.json();
+
+      res.status(response.status).json(data);
+    } catch (error) {
+      next(error);
+    }
   }
-});
+);
 
 // =====================================================
 // MAIN SERVER TEST
@@ -267,7 +309,8 @@ app.get("/api/stock/low", async (req, res, next) => {
 app.get("/", (req, res) => {
   res.json({
     success: true,
-    message: "Inventory Management Main Server is running!",
+    message:
+      "Inventory Management Main Server is running!",
   });
 });
 
@@ -275,28 +318,35 @@ app.get("/", (req, res) => {
 // SUPABASE CONNECTION TEST
 // =====================================================
 
-app.get("/api/test-supabase", async (req, res) => {
-  try {
-    const { data, error } = await supabase.auth.getSession();
+app.get(
+  "/api/test-supabase",
+  async (req, res) => {
+    try {
+      const {
+        data,
+        error,
+      } = await supabase.auth.getSession();
 
-    if (error) {
-      return res.status(500).json({
+      if (error) {
+        return res.status(500).json({
+          success: false,
+          message: error.message,
+        });
+      }
+
+      res.json({
+        success: true,
+        message:
+          "Supabase connected successfully!",
+      });
+    } catch (error) {
+      res.status(500).json({
         success: false,
         message: error.message,
       });
     }
-
-    res.json({
-      success: true,
-      message: "Supabase connected successfully!",
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
   }
-});
+);
 
 // =====================================================
 // ERROR HANDLER
@@ -309,5 +359,7 @@ app.use(errorHandler);
 // =====================================================
 
 app.listen(PORT, () => {
-  console.log(`Main Server running on http://localhost:${PORT}`);
+  console.log(
+    `Main Server running on http://localhost:${PORT}`
+  );
 });
