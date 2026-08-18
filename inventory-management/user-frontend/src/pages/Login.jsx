@@ -56,7 +56,7 @@ function Login() {
         JSON.stringify(adminUser)
       );
 
-      window.location.href = "/";
+      window.location.href = "https://inventory-tau-liard.vercel.app/";
 
       return;
     }
