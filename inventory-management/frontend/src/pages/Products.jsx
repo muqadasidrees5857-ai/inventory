@@ -26,7 +26,7 @@ function Products() {
   const fetchProducts = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:5001/api/products"
+        `${import.meta.env.VITE_API_URL}/api/products/${product.id}`,
       );
 
       setProducts(response.data.products);
@@ -49,7 +49,7 @@ function Products() {
 
     try {
       await axios.delete(
-        `http://localhost:5001/api/products/${id}`
+        `${import.meta.env.VITE_API_URL}/api/products/${product.id}`,
       );
 
       setProducts((currentProducts) =>

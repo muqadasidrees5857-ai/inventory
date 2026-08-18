@@ -29,7 +29,7 @@ function EditProductModal({ product, onClose, onProductUpdated }) {
 
     try {
       const response = await axios.put(
-        `http://localhost:5001/api/products/${product.id}`,
+        `${import.meta.env.VITE_API_URL}/api/products/${product.id}`,
         {
           ...formData,
           price: Number(formData.price),

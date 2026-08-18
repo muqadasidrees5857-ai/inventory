@@ -151,7 +151,7 @@ function AddProductModal({ onClose, onProductAdded }) {
 
       const response =
         await axios.post(
-          "http://localhost:5001/api/products",
+          `${import.meta.env.VITE_API_URL}/api/products`,
           data,
           {
             headers: {

@@ -244,7 +244,7 @@ function Cart() {
                     "http"
                   )
                   ? item.image
-                  : `http://localhost:5001${item.image}`
+                  : `${import.meta.env.VITE_API_URL}${item.image}`
                 : "https://images.unsplash.com/photo-1496181133206-80ce9b88a853";
 
             return (

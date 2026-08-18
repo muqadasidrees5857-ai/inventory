@@ -15,7 +15,7 @@ function Stock() {
   const fetchProducts = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:5001/api/products"
+        `${import.meta.env.VITE_API_URL}/api/products/${product.id}`,
       );
 
       setProducts(response.data.products);
@@ -42,7 +42,7 @@ function Stock() {
 
     try {
       const response = await axios.put(
-        `http://localhost:5001/api/products/${product.id}`,
+        `${import.meta.env.VITE_API_URL}/api/products/${product.id}`,
         {
           name: product.name,
           category: product.category,
@@ -76,7 +76,7 @@ function Stock() {
 
     try {
       const response = await axios.put(
-        `http://localhost:5001/api/products/${product.id}`,
+       `${import.meta.env.VITE_API_URL}/api/products/${product.id}`,
         {
           name: product.name,
           category: product.category,

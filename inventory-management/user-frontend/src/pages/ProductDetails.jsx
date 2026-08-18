@@ -39,7 +39,7 @@ function ProductDetails() {
       try {
 
         const response = await axios.get(
-          "http://localhost:5001/api/products"
+          `${import.meta.env.VITE_API_URL}/api/products/${product.id}`,
         );
 
         const products =
@@ -136,7 +136,7 @@ function ProductDetails() {
     }
 
 
-    return `http://localhost:5001${image}`;
+    return `${import.meta.env.VITE_API_URL}${image}`;
 
   };
 

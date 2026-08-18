@@ -18,7 +18,7 @@ function Orders() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const API_URL = "http://localhost:5001/api/orders";
+  const API_URL = `${import.meta.env.VITE_API_URL}/api/products/${product.id}`,
 
   // =====================================================
   // FETCH ORDERS
@@ -729,7 +729,7 @@ function Orders() {
                               "http"
                             )
                             ? item.image
-                            : `http://localhost:5001${item.image}`
+                            : `${import.meta.env.VITE_API_URL}${item.image}`
                           : "";
 
                       return (

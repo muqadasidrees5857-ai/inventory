@@ -7,7 +7,7 @@ function ProductCard({ product }) {
     product.image?.startsWith("http")
       ? product.image
       : product.image
-        ? `http://localhost:5001${product.image}`
+        ? `${import.meta.env.VITE_API_URL}${product.image}`
         : "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=crop&w=800&q=80";
 
   return (

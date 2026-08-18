@@ -41,7 +41,7 @@ function Products() {
     try {
 
       const response = await axios.get(
-        "http://localhost:5001/api/products"
+        `${import.meta.env.VITE_API_URL}/api/products/${product.id}`,
       );
 
       setProducts(
