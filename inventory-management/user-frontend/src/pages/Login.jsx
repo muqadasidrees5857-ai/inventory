@@ -1,6 +1,5 @@
-
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import {
   LogIn,
   Mail,
@@ -10,15 +9,14 @@ import {
 } from "lucide-react";
 
 function Login() {
-  const navigate = useNavigate();
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
 
     setError("");
@@ -58,70 +56,111 @@ function Login() {
         JSON.stringify(adminUser)
       );
 
-      // Admin frontend
       window.location.href = "http://localhost:5174/";
 
       return;
     }
 
     // =========================
-    // REGISTERED USERS
+    // SUPABASE USER LOGIN
     // =========================
 
-    const registeredUsers =
-      JSON.parse(
-        localStorage.getItem("registeredUsers")
-      ) || [];
+    try {
+      setLoading(true);
 
-    // Find user by email
-    const existingUser = registeredUsers.find(
-      (user) =>
-        user.email.toLowerCase() === cleanEmail
-    );
-
-    // User doesn't exist
-    if (!existingUser) {
-      setError(
-        "No account found with this email address."
+      const response = await fetch(
+        "http://localhost:5000/api/auth/login",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: cleanEmail,
+            password: password,
+          }),
+        }
       );
-      return;
-    }
 
-    // Wrong password
-    if (existingUser.password !== password) {
-      setError("Incorrect password. Please try again.");
-      return;
-    }
+      const data = await response.json();
 
-    // =========================
-    // USER LOGIN SUCCESS
-    // =========================
+      // =========================
+      // BACKEND ERROR
+      // =========================
 
-    const loggedInUser = {
-      id: existingUser.id,
-      name: existingUser.name,
-      email: existingUser.email,
-      role: "user",
-    };
+      if (!response.ok) {
+        setError(
+          data.message ||
+            "Invalid email or password."
+        );
+        return;
+      }
 
-    localStorage.setItem(
-      "user",
-      JSON.stringify(loggedInUser)
-    );
+      // =========================
+      // LOGIN SUCCESS
+      // =========================
 
-    // Remember me
-    if (rememberMe) {
+      const loggedInUser = {
+        id: data.user.id,
+        name:
+          data.user.user_metadata?.name ||
+          "",
+        email: data.user.email,
+        role:
+          data.user.user_metadata?.role ||
+          "user",
+      };
+
       localStorage.setItem(
-        "rememberMe",
-        "true"
+        "user",
+        JSON.stringify(loggedInUser)
       );
-    } else {
-      localStorage.removeItem("rememberMe");
-    }
 
-    // Go to user home
-    // Go to user home
-window.location.href = "/";
+      // =========================
+      // SAVE LOGIN LOG TO SUPABASE
+      // =========================
+
+      try {
+        await fetch("http://localhost:5000/api/logs", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            user_id: data.user.id,
+            email: data.user.email,
+          }),
+        });
+      } catch (logErr) {
+        console.error("Failed to save login log:", logErr);
+      }
+
+      // =========================
+      // REMEMBER ME
+      // =========================
+
+      if (rememberMe) {
+        localStorage.setItem(
+          "rememberMe",
+          "true"
+        );
+      } else {
+        localStorage.removeItem("rememberMe");
+      }
+
+      // =========================
+      // USER HOME
+      // =========================
+
+      window.location.href = "/";
+
+    } catch (error) {
+      console.error("Login error:", error);
+
+      setError(
+        "Unable to connect to server. Please try again."
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -276,8 +315,11 @@ window.location.href = "/";
             <button
               type="submit"
               className="login-btn"
+              disabled={loading}
             >
-              Login
+              {loading
+                ? "Logging in..."
+                : "Login"}
             </button>
 
           </form>

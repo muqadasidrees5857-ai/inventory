@@ -62,7 +62,7 @@ function Checkout() {
   const total = subtotal + delivery;
 
   // =========================
-  // Handle Customer Input
+  // Customer Input
   // =========================
 
   const handleChange = (e) => {
@@ -73,7 +73,7 @@ function Checkout() {
   };
 
   // =========================
-  // Handle Payment Details
+  // Payment Input
   // =========================
 
   const handlePaymentDetailsChange = (e) => {
@@ -84,13 +84,12 @@ function Checkout() {
   };
 
   // =========================
-  // Handle Payment Method
+  // Payment Method
   // =========================
 
   const handlePaymentMethodChange = (e) => {
     setPaymentMethod(e.target.value);
 
-    // Clear previous payment details
     setPaymentDetails({
       accountNumber: "",
       transactionId: "",
@@ -120,7 +119,7 @@ function Checkout() {
     }
 
     // =========================
-    // Payment Method Validation
+    // Payment Validation
     // =========================
 
     if (!paymentMethod) {
@@ -165,6 +164,15 @@ function Checkout() {
       setLoading(true);
 
       // =========================
+      // Get Logged In User
+      // =========================
+
+      const loggedInUser =
+        JSON.parse(
+          localStorage.getItem("user")
+        ) || null;
+
+      // =========================
       // Send Order To Backend
       // =========================
 
@@ -181,16 +189,19 @@ function Checkout() {
 
           total,
 
-          // Backend expects:
-          // COD
-          // JazzCash
-          // Bank Transfer
           paymentMethod,
 
           paymentDetails:
             paymentMethod === "COD"
               ? {}
               : paymentDetails,
+
+          // Send user information
+          userId:
+            loggedInUser?.id || null,
+
+          userEmail:
+            loggedInUser?.email || null,
         }
       );
 
@@ -201,12 +212,22 @@ function Checkout() {
       if (response.data.success) {
         localStorage.removeItem("cart");
 
-        alert("Order placed successfully!");
+        alert(
+          "Order placed successfully!"
+        );
 
         navigate("/orders");
+      } else {
+        setError(
+          response.data.message ||
+            "Unable to place order."
+        );
       }
     } catch (error) {
-      console.error("Order Error:", error);
+      console.error(
+        "Order Error:",
+        error
+      );
 
       setError(
         error.response?.data?.message ||
@@ -254,9 +275,7 @@ function Checkout() {
   return (
     <div className="checkout-page">
 
-      {/* =========================
-          Header
-      ========================= */}
+      {/* Header */}
 
       <div className="checkout-header">
 
@@ -291,7 +310,7 @@ function Checkout() {
       <div className="checkout-layout">
 
         {/* =========================
-            Customer Form
+            CUSTOMER FORM
         ========================= */}
 
         <div className="checkout-form-card">
@@ -302,7 +321,7 @@ function Checkout() {
 
           <form onSubmit={handleSubmit}>
 
-            {/* Full Name */}
+            {/* Name */}
 
             <div className="checkout-form-group">
 
@@ -379,7 +398,7 @@ function Checkout() {
             </div>
 
             {/* =========================
-                Payment Method
+                PAYMENT METHOD
             ========================= */}
 
             <div className="checkout-payment-section">
@@ -394,9 +413,7 @@ function Checkout() {
 
               <div className="payment-method-options">
 
-                {/* =========================
-                    Cash on Delivery
-                ========================= */}
+                {/* COD */}
 
                 <label
                   className={`payment-method-option ${
@@ -432,9 +449,7 @@ function Checkout() {
 
                 </label>
 
-                {/* =========================
-                    JazzCash
-                ========================= */}
+                {/* JazzCash */}
 
                 <label
                   className={`payment-method-option ${
@@ -470,9 +485,7 @@ function Checkout() {
 
                 </label>
 
-                {/* =========================
-                    Bank Transfer
-                ========================= */}
+                {/* Bank Transfer */}
 
                 <label
                   className={`payment-method-option ${
@@ -513,7 +526,7 @@ function Checkout() {
               </div>
 
               {/* =========================
-                  JazzCash Details
+                  JAZZCASH DETAILS
               ========================= */}
 
               {paymentMethod === "JazzCash" && (
@@ -571,7 +584,7 @@ function Checkout() {
               )}
 
               {/* =========================
-                  Bank Transfer Details
+                  BANK TRANSFER DETAILS
               ========================= */}
 
               {paymentMethod ===
@@ -652,9 +665,7 @@ function Checkout() {
 
             </div>
 
-            {/* =========================
-                Error
-            ========================= */}
+            {/* Error */}
 
             {error && (
               <div className="checkout-error">
@@ -662,20 +673,16 @@ function Checkout() {
               </div>
             )}
 
-            {/* =========================
-                Place Order
-            ========================= */}
+            {/* Place Order */}
 
             <button
               type="submit"
               className="place-order-btn"
               disabled={loading}
             >
-
               {loading
                 ? "Placing Order..."
                 : "Place Order"}
-
             </button>
 
           </form>
@@ -683,7 +690,7 @@ function Checkout() {
         </div>
 
         {/* =========================
-            Order Summary
+            ORDER SUMMARY
         ========================= */}
 
         <div className="checkout-summary">
@@ -743,9 +750,7 @@ function Checkout() {
 
           </div>
 
-          {/* =========================
-              Subtotal
-          ========================= */}
+          {/* Subtotal */}
 
           <div className="checkout-total-row">
 
@@ -760,9 +765,7 @@ function Checkout() {
 
           </div>
 
-          {/* =========================
-              Delivery
-          ========================= */}
+          {/* Delivery */}
 
           <div className="checkout-total-row">
 
@@ -778,9 +781,7 @@ function Checkout() {
 
           <hr />
 
-          {/* =========================
-              Grand Total
-          ========================= */}
+          {/* Total */}
 
           <div className="checkout-grand-total">
 

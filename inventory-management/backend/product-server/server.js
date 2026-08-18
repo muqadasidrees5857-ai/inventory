@@ -21,10 +21,15 @@ app.use(express.json());
 // UPLOAD FOLDER
 // =====================================================
 
-const uploadDir = path.join(__dirname, "uploads/products");
+const uploadDir = path.join(
+  __dirname,
+  "uploads/products"
+);
 
 if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
+  fs.mkdirSync(uploadDir, {
+    recursive: true
+  });
 }
 
 // =====================================================
@@ -32,20 +37,26 @@ if (!fs.existsSync(uploadDir)) {
 // =====================================================
 
 const storage = multer.diskStorage({
+
   destination: (req, file, cb) => {
     cb(null, uploadDir);
   },
 
   filename: (req, file, cb) => {
-    const extension = path.extname(file.originalname);
 
-    const fileName = `product-${Date.now()}${extension}`;
+    const extension =
+      path.extname(file.originalname);
+
+    const fileName =
+      `product-${Date.now()}${extension}`;
 
     cb(null, fileName);
   }
+
 });
 
 const upload = multer({
+
   storage,
 
   limits: {
@@ -53,6 +64,7 @@ const upload = multer({
   },
 
   fileFilter: (req, file, cb) => {
+
     const allowedTypes = [
       "image/jpeg",
       "image/jpg",
@@ -60,16 +72,26 @@ const upload = multer({
       "image/webp"
     ];
 
-    if (allowedTypes.includes(file.mimetype)) {
+    if (
+      allowedTypes.includes(
+        file.mimetype
+      )
+    ) {
+
       cb(null, true);
+
     } else {
+
       cb(
         new Error(
           "Only JPG, JPEG, PNG and WEBP images are allowed."
         )
       );
+
     }
+
   }
+
 });
 
 // =====================================================
@@ -79,7 +101,10 @@ const upload = multer({
 app.use(
   "/uploads",
   express.static(
-    path.join(__dirname, "uploads")
+    path.join(
+      __dirname,
+      "uploads"
+    )
   )
 );
 
@@ -88,39 +113,54 @@ app.use(
 // FROM SUPABASE
 // =====================================================
 
-app.get("/api/products", async (req, res) => {
-  try {
-    const {
-      data: products,
-      error
-    } = await supabase
-      .from("products")
-      .select("*")
-      .order("id", {
-        ascending: true
+app.get(
+  "/api/products",
+  async (req, res) => {
+
+    try {
+
+      const {
+        data: products,
+        error
+      } = await supabase
+        .from("products")
+        .select("*")
+        .order("id", {
+          ascending: true
+        });
+
+      if (error) {
+        throw error;
+      }
+
+      res.json({
+
+        success: true,
+
+        products
+
       });
 
-    if (error) {
-      throw error;
+    } catch (error) {
+
+      console.error(
+        "Get Products Error:",
+        error
+      );
+
+      res.status(500).json({
+
+        success: false,
+
+        message:
+          "Unable to read products."
+
+      });
+
     }
 
-    res.json({
-      success: true,
-      products
-    });
-
-  } catch (error) {
-    console.error(
-      "Get Products Error:",
-      error
-    );
-
-    res.status(500).json({
-      success: false,
-      message: "Unable to read products."
-    });
   }
-});
+);
 
 // =====================================================
 // ADD PRODUCT + IMAGE
@@ -132,7 +172,9 @@ app.post(
   upload.array("images", 6),
   validateProduct,
   async (req, res) => {
+
     try {
+
       const {
         name,
         category,
@@ -145,12 +187,13 @@ app.post(
       // MULTIPLE IMAGES
       // -------------------------------------------------
 
-      const images = req.files
-        ? req.files.map(
-            (file) =>
-              `/uploads/products/${file.filename}`
-          )
-        : [];
+      const images =
+        req.files
+          ? req.files.map(
+              (file) =>
+                `/uploads/products/${file.filename}`
+            )
+          : [];
 
       // -------------------------------------------------
       // MAIN IMAGE
@@ -163,7 +206,7 @@ app.post(
           : "";
 
       // -------------------------------------------------
-      // INSERT PRODUCT INTO SUPABASE
+      // INSERT PRODUCT
       // -------------------------------------------------
 
       const {
@@ -173,13 +216,23 @@ app.post(
         .from("products")
         .insert([
           {
+
             name,
+
             category,
-            price: Number(price),
-            quantity: Number(quantity),
+
+            price:
+              Number(price),
+
+            quantity:
+              Number(quantity),
+
             supplier,
+
             image,
+
             images
+
           }
         ])
         .select();
@@ -189,22 +242,35 @@ app.post(
       }
 
       res.status(201).json({
+
         success: true,
-        message: "Product added successfully!",
-        product: data[0]
+
+        message:
+          "Product added successfully!",
+
+        product:
+          data[0]
+
       });
 
     } catch (error) {
+
       console.error(
         "Add Product Error:",
         error
       );
 
       res.status(500).json({
+
         success: false,
-        message: "Unable to add product."
+
+        message:
+          "Unable to add product."
+
       });
+
     }
+
   }
 );
 
@@ -217,7 +283,9 @@ app.put(
   upload.single("image"),
   validateProduct,
   async (req, res) => {
+
     try {
+
       const productId =
         parseInt(req.params.id);
 
@@ -230,20 +298,30 @@ app.put(
       } = req.body;
 
       const updateData = {
+
         name,
+
         category,
-        price: Number(price),
-        quantity: Number(quantity),
+
+        price:
+          Number(price),
+
+        quantity:
+          Number(quantity),
+
         supplier
+
       };
 
       // -------------------------------------------------
-      // UPDATE IMAGE IF NEW IMAGE PROVIDED
+      // UPDATE IMAGE
       // -------------------------------------------------
 
       if (req.file) {
+
         updateData.image =
           `/uploads/products/${req.file.filename}`;
+
       }
 
       const {
@@ -263,29 +341,48 @@ app.put(
         !data ||
         data.length === 0
       ) {
+
         return res.status(404).json({
+
           success: false,
-          message: "Product not found."
+
+          message:
+            "Product not found."
+
         });
+
       }
 
       res.json({
+
         success: true,
-        message: "Product updated successfully!",
-        product: data[0]
+
+        message:
+          "Product updated successfully!",
+
+        product:
+          data[0]
+
       });
 
     } catch (error) {
+
       console.error(
         "Update Product Error:",
         error
       );
 
       res.status(500).json({
+
         success: false,
-        message: "Unable to update product."
+
+        message:
+          "Unable to update product."
+
       });
+
     }
+
   }
 );
 
@@ -297,7 +394,9 @@ app.put(
 app.delete(
   "/api/products/:id",
   async (req, res) => {
+
     try {
+
       const productId =
         parseInt(req.params.id);
 
@@ -318,29 +417,48 @@ app.delete(
         !data ||
         data.length === 0
       ) {
+
         return res.status(404).json({
+
           success: false,
-          message: "Product not found."
+
+          message:
+            "Product not found."
+
         });
+
       }
 
       res.json({
+
         success: true,
-        message: "Product deleted successfully!",
-        product: data[0]
+
+        message:
+          "Product deleted successfully!",
+
+        product:
+          data[0]
+
       });
 
     } catch (error) {
+
       console.error(
         "Delete Product Error:",
         error
       );
 
       res.status(500).json({
+
         success: false,
-        message: "Unable to delete product."
+
+        message:
+          "Unable to delete product."
+
       });
+
     }
+
   }
 );
 
@@ -348,12 +466,21 @@ app.delete(
 // TEST ROUTE
 // =====================================================
 
-app.get("/", (req, res) => {
-  res.json({
-    success: true,
-    message: "Product Server is running!"
-  });
-});
+app.get(
+  "/",
+  (req, res) => {
+
+    res.json({
+
+      success: true,
+
+      message:
+        "Product Server is running!"
+
+    });
+
+  }
+);
 
 // =====================================================
 // ORDERS
@@ -365,67 +492,74 @@ app.get("/", (req, res) => {
 // GET ALL ORDERS
 // =====================================================
 
-app.get("/api/orders", async (req, res) => {
-  try {
-    const {
-      data: orders,
-      error
-    } = await supabase
-      .from("orders")
-      .select("*")
-      .order("created_at", {
-        ascending: false
+app.get(
+  "/api/orders",
+  async (req, res) => {
+
+    try {
+
+      const {
+        data: orders,
+        error
+      } = await supabase
+        .from("orders")
+        .select("*")
+        .order("created_at", {
+          ascending: false
+        });
+
+      if (error) {
+        throw error;
+      }
+
+      // -------------------------------------------------
+      // FORMAT ORDERS
+      // -------------------------------------------------
+
+      const formattedOrders =
+        (orders || []).map(
+          (order) => ({
+
+            ...order,
+
+            status:
+              order.order_status,
+
+            createdAt:
+              order.created_at
+
+          })
+        );
+
+      res.json({
+
+        success: true,
+
+        orders:
+          formattedOrders
+
       });
 
-    if (error) {
-      throw error;
+    } catch (error) {
+
+      console.error(
+        "Get Orders Error:",
+        error
+      );
+
+      res.status(500).json({
+
+        success: false,
+
+        message:
+          "Unable to read orders."
+
+      });
+
     }
 
-    // -------------------------------------------------
-    // FORMAT ORDERS FOR FRONTEND
-    // -------------------------------------------------
-
-    const formattedOrders =
-      (orders || []).map((order) => ({
-        ...order,
-
-        // Supabase column:
-        // order_status
-
-        // Frontend property:
-        // status
-
-        status:
-          order.order_status,
-
-        // Supabase:
-        // created_at
-
-        // Frontend:
-        // createdAt
-
-        createdAt:
-          order.created_at
-      }));
-
-    res.json({
-      success: true,
-      orders: formattedOrders
-    });
-
-  } catch (error) {
-    console.error(
-      "Get Orders Error:",
-      error
-    );
-
-    res.status(500).json({
-      success: false,
-      message: "Unable to read orders."
-    });
   }
-});
-
+);
 
 // =====================================================
 // GET SINGLE ORDER
@@ -434,15 +568,23 @@ app.get("/api/orders", async (req, res) => {
 app.get(
   "/api/orders/:id",
   async (req, res) => {
+
     try {
+
       const orderId =
         parseInt(req.params.id);
 
       if (isNaN(orderId)) {
+
         return res.status(400).json({
+
           success: false,
-          message: "Invalid order ID."
+
+          message:
+            "Invalid order ID."
+
         });
+
       }
 
       const {
@@ -459,13 +601,20 @@ app.get(
       }
 
       if (!order) {
+
         return res.status(404).json({
+
           success: false,
-          message: "Order not found."
+
+          message:
+            "Order not found."
+
         });
+
       }
 
       const formattedOrder = {
+
         ...order,
 
         status:
@@ -473,27 +622,38 @@ app.get(
 
         createdAt:
           order.created_at
+
       };
 
       res.json({
+
         success: true,
-        order: formattedOrder
+
+        order:
+          formattedOrder
+
       });
 
     } catch (error) {
+
       console.error(
         "Get Single Order Error:",
         error
       );
 
       res.status(404).json({
+
         success: false,
-        message: "Order not found."
+
+        message:
+          "Order not found."
+
       });
+
     }
+
   }
 );
-
 
 // =====================================================
 // CREATE ORDER
@@ -503,6 +663,7 @@ app.get(
 app.post(
   "/api/orders",
   async (req, res) => {
+
     try {
 
       const {
@@ -526,11 +687,16 @@ app.post(
         !customer.address ||
         !customer.city
       ) {
+
         return res.status(400).json({
+
           success: false,
+
           message:
             "Customer name, phone, address and city are required."
+
         });
+
       }
 
       // -------------------------------------------------
@@ -542,11 +708,16 @@ app.post(
         !Array.isArray(items) ||
         items.length === 0
       ) {
+
         return res.status(400).json({
+
           success: false,
+
           message:
             "Order must contain products."
+
         });
+
       }
 
       // -------------------------------------------------
@@ -554,11 +725,16 @@ app.post(
       // -------------------------------------------------
 
       if (!paymentMethod) {
+
         return res.status(400).json({
+
           success: false,
+
           message:
             "Payment method is required."
+
         });
+
       }
 
       // -------------------------------------------------
@@ -576,15 +752,60 @@ app.post(
           paymentMethod
         )
       ) {
+
         return res.status(400).json({
+
           success: false,
+
           message:
             "Invalid payment method."
+
         });
+
       }
 
       // -------------------------------------------------
-      // INSERT ORDER
+      // PAYMENT DETAILS
+      // -------------------------------------------------
+
+      const details =
+        paymentDetails || {};
+
+      // -------------------------------------------------
+      // ACCOUNT NUMBER
+      // JazzCash
+      // -------------------------------------------------
+
+      const accountNumber =
+        paymentMethod === "JazzCash"
+          ? details.accountNumber ||
+            null
+          : null;
+
+      // -------------------------------------------------
+      // BANK NAME
+      // Bank Transfer
+      // -------------------------------------------------
+
+      const bankName =
+        paymentMethod === "Bank Transfer"
+          ? details.bankName ||
+            null
+          : null;
+
+      // -------------------------------------------------
+      // ACCOUNT TITLE
+      // Bank Transfer
+      // -------------------------------------------------
+
+      const accountTitle =
+        paymentMethod === "Bank Transfer"
+          ? details.accountTitle ||
+            null
+          : null;
+
+      // -------------------------------------------------
+      // INSERT ORDER INTO SUPABASE
       // -------------------------------------------------
 
       const {
@@ -593,10 +814,16 @@ app.post(
       } = await supabase
         .from("orders")
         .insert([
+
           {
+
+            // Customer
             customer,
+
+            // Products
             items,
 
+            // Amounts
             subtotal:
               Number(subtotal) || 0,
 
@@ -606,29 +833,65 @@ app.post(
             total:
               Number(total) || 0,
 
+            // Payment Method
             payment_method:
               paymentMethod,
 
+            // Payment Status
             payment_status:
               "Pending",
 
+            // Complete Payment Details
             payment_details:
               paymentDetails || {},
 
+            // =================================================
+            // NEW PAYMENT COLUMNS
+            // =================================================
+
+            account_number:
+              accountNumber,
+
+            bank_name:
+              bankName,
+
+            account_title:
+              accountTitle,
+
+            // =================================================
+            // ORDER STATUS
+            // =================================================
+
             order_status:
               "Pending"
+
           }
+
         ])
         .select()
         .single();
 
+      // -------------------------------------------------
+      // SUPABASE ERROR
+      // -------------------------------------------------
+
       if (error) {
+
         console.error(
           "Supabase Order Error:",
           error
         );
 
-        throw error;
+        return res.status(500).json({
+
+          success: false,
+
+          message:
+            error.message ||
+            "Unable to save order."
+
+        });
+
       }
 
       // -------------------------------------------------
@@ -636,6 +899,7 @@ app.post(
       // -------------------------------------------------
 
       const formattedOrder = {
+
         ...data,
 
         status:
@@ -643,31 +907,45 @@ app.post(
 
         createdAt:
           data.created_at
+
       };
 
+      // -------------------------------------------------
+      // SUCCESS
+      // -------------------------------------------------
+
       res.status(201).json({
+
         success: true,
+
         message:
           "Order placed successfully!",
+
         order:
           formattedOrder
+
       });
 
     } catch (error) {
+
       console.error(
         "Create Order Error:",
         error
       );
 
       res.status(500).json({
+
         success: false,
+
         message:
           "Unable to place order."
+
       });
+
     }
+
   }
 );
-
 
 // =====================================================
 // UPDATE ORDER STATUS
@@ -683,8 +961,9 @@ app.put(
       const orderId =
         parseInt(req.params.id);
 
-      const { status } =
-        req.body;
+      const {
+        status
+      } = req.body;
 
       // -------------------------------------------------
       // VALIDATE ID
@@ -693,9 +972,12 @@ app.put(
       if (isNaN(orderId)) {
 
         return res.status(400).json({
+
           success: false,
+
           message:
             "Invalid order ID."
+
         });
 
       }
@@ -713,13 +995,18 @@ app.put(
       ];
 
       if (
-        !allowedStatuses.includes(status)
+        !allowedStatuses.includes(
+          status
+        )
       ) {
 
         return res.status(400).json({
+
           success: false,
+
           message:
             "Invalid order status."
+
         });
 
       }
@@ -734,8 +1021,10 @@ app.put(
       } = await supabase
         .from("orders")
         .update({
+
           order_status:
             status
+
         })
         .eq("id", orderId)
         .select()
@@ -749,6 +1038,7 @@ app.put(
         );
 
         throw error;
+
       }
 
       // -------------------------------------------------
@@ -758,9 +1048,12 @@ app.put(
       if (!data) {
 
         return res.status(404).json({
+
           success: false,
+
           message:
             "Order not found."
+
         });
 
       }
@@ -770,18 +1063,19 @@ app.put(
       // -------------------------------------------------
 
       const formattedOrder = {
+
         ...data,
 
-        // VERY IMPORTANT
         status:
           data.order_status,
 
         createdAt:
           data.created_at
+
       };
 
       // -------------------------------------------------
-      // SUCCESS RESPONSE
+      // SUCCESS
       // -------------------------------------------------
 
       res.json({
@@ -816,7 +1110,6 @@ app.put(
 
   }
 );
-
 
 // =====================================================
 // UPDATE PAYMENT STATUS
@@ -854,9 +1147,12 @@ app.put(
       ) {
 
         return res.status(400).json({
+
           success: false,
+
           message:
             "Invalid payment status."
+
         });
 
       }
@@ -871,8 +1167,10 @@ app.put(
       } = await supabase
         .from("orders")
         .update({
+
           payment_status:
             paymentStatus
+
         })
         .eq("id", orderId)
         .select()
@@ -918,7 +1216,6 @@ app.put(
 
   }
 );
-
 
 // =====================================================
 // START SERVER

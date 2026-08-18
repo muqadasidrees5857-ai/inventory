@@ -24,7 +24,7 @@ function Register() {
 
   const [error, setError] = useState("");
 
-  const handleRegister = (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
 
     setError("");
@@ -41,9 +41,7 @@ function Register() {
     }
 
     if (password.length < 6) {
-      setError(
-        "Password must be at least 6 characters."
-      );
+      setError("Password must be at least 6 characters.");
       return;
     }
 
@@ -52,58 +50,55 @@ function Register() {
       return;
     }
 
-    // Check existing users
-    const existingUsers =
-      JSON.parse(
-        localStorage.getItem("registeredUsers")
-      ) || [];
-
-    const userExists = existingUsers.some(
-      (user) =>
-        user.email.toLowerCase() ===
-        email.toLowerCase()
-    );
-
-    if (userExists) {
-      setError(
-        "An account with this email already exists."
+    try {
+      // Send registration data to backend
+      const response = await fetch(
+        "http://localhost:5000/api/auth/register",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name: name.trim(),
+            email: email.trim().toLowerCase(),
+            password: password,
+          }),
+        }
       );
-      return;
+
+      const data = await response.json();
+
+      // Backend error
+      if (!response.ok) {
+        setError(
+          data.message ||
+            "Registration failed. Please try again."
+        );
+        return;
+      }
+
+      // Success
+      alert(
+        "Account created successfully! Please login."
+      );
+
+      navigate("/login");
+    } catch (error) {
+      console.error("Registration error:", error);
+
+      setError(
+        "Unable to connect to server. Please try again."
+      );
     }
-
-    // Create user
-    const newUser = {
-      id: Date.now(),
-      name: name,
-      email: email,
-      password: password,
-      role: "user",
-    };
-
-    existingUsers.push(newUser);
-
-    localStorage.setItem(
-      "registeredUsers",
-      JSON.stringify(existingUsers)
-    );
-
-    // Success message
-    alert(
-      "Account created successfully! Please login."
-    );
-
-    navigate("/login");
   };
 
   return (
     <div className="register-page">
-
       <div className="register-container">
-
         <div className="register-card">
 
           {/* Header */}
-
           <div className="register-header">
 
             <div className="register-icon">
@@ -119,14 +114,12 @@ function Register() {
           </div>
 
           {/* Form */}
-
           <form
             className="register-form"
             onSubmit={handleRegister}
           >
 
             {/* Error */}
-
             {error && (
               <div className="register-error">
                 {error}
@@ -134,7 +127,6 @@ function Register() {
             )}
 
             {/* Name */}
-
             <div className="register-field">
 
               <label htmlFor="name">
@@ -164,7 +156,6 @@ function Register() {
             </div>
 
             {/* Email */}
-
             <div className="register-field">
 
               <label htmlFor="register-email">
@@ -194,7 +185,6 @@ function Register() {
             </div>
 
             {/* Password */}
-
             <div className="register-field">
 
               <label htmlFor="register-password">
@@ -244,7 +234,6 @@ function Register() {
             </div>
 
             {/* Confirm Password */}
-
             <div className="register-field">
 
               <label htmlFor="confirm-password">
@@ -296,7 +285,6 @@ function Register() {
             </div>
 
             {/* Register Button */}
-
             <button
               type="submit"
               className="register-btn"
@@ -307,7 +295,6 @@ function Register() {
           </form>
 
           {/* Login */}
-
           <div className="register-login">
 
             Already have an account?{" "}
@@ -319,12 +306,9 @@ function Register() {
           </div>
 
         </div>
-
       </div>
-
     </div>
   );
 }
 
 export default Register;
-
