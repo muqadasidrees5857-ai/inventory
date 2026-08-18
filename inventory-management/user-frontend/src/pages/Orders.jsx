@@ -19,7 +19,11 @@ function Orders() {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState("");
 
-  const API_URL = `${import.meta.env.VITE_API_URL}/api/products/${product.id}`,
+  // =====================================================
+  // API URL
+  // =====================================================
+
+  const API_URL = `${import.meta.env.VITE_API_URL}/api/orders`;
 
   // =====================================================
   // FETCH ORDERS
@@ -40,7 +44,6 @@ function Orders() {
           "Cache-Control": "no-cache",
           Pragma: "no-cache",
         },
-
         params: {
           _t: Date.now(),
         },
@@ -62,16 +65,11 @@ function Orders() {
       const normalizedOrders = latestOrders.map((order) => ({
         ...order,
 
-        // Backend normally sends status
-        // But if backend sends order_status,
-        // frontend will still work.
         status:
           order.status ||
           order.order_status ||
           "Pending",
 
-        // Backend normally sends createdAt
-        // But fallback to created_at
         createdAt:
           order.createdAt ||
           order.created_at ||
@@ -84,7 +82,6 @@ function Orders() {
         "Orders shown on frontend:",
         normalizedOrders
       );
-
     } catch (err) {
       console.error(
         "Unable to fetch orders:",
@@ -99,7 +96,7 @@ function Orders() {
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [API_URL]);
 
   // =====================================================
   // INITIAL LOAD
@@ -116,9 +113,7 @@ function Orders() {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      console.log(
-        "Auto refreshing orders..."
-      );
+      console.log("Auto refreshing orders...");
 
       fetchOrders(false);
     }, 10000);
@@ -134,9 +129,7 @@ function Orders() {
 
   useEffect(() => {
     const handleVisibilityChange = () => {
-      if (
-        document.visibilityState === "visible"
-      ) {
+      if (document.visibilityState === "visible") {
         console.log(
           "User returned to Orders page."
         );
@@ -260,9 +253,7 @@ function Orders() {
 
         <button
           className="continue-shopping-btn"
-          onClick={() =>
-            fetchOrders(true)
-          }
+          onClick={() => fetchOrders(true)}
         >
           <RefreshCw size={18} />
           Try Again
@@ -308,9 +299,7 @@ function Orders() {
 
           <button
             className="orders-refresh-btn"
-            onClick={() =>
-              fetchOrders(false)
-            }
+            onClick={() => fetchOrders(false)}
             disabled={refreshing}
             title="Refresh Orders"
           >
