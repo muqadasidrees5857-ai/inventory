@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -56,7 +57,9 @@ function Login() {
         JSON.stringify(adminUser)
       );
 
-      window.location.href = "https://inventory-tau-liard.vercel.app/";
+      // Redirect to Admin Frontend
+      window.location.href =
+        "https://inventory-s2qj.vercel.app/";
 
       return;
     }
@@ -115,11 +118,6 @@ function Login() {
         "user",
         JSON.stringify(loggedInUser)
       );
-
-      // =========================
-      // SAVE LOGIN LOG TO SUPABASE
-      // =========================
-
 
       // =========================
       // REMEMBER ME
