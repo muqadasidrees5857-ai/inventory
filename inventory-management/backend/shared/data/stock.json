@@ -1,0 +1,23 @@
+[
+  {
+    "id": 1,
+    "productId": 1,
+    "productName": "Wireless Mouse",
+    "quantity": 40,
+    "reorderLevel": 10
+  },
+  {
+    "id": 2,
+    "productId": 2,
+    "productName": "Keyboard",
+    "quantity": 5,
+    "reorderLevel": 5
+  },
+  {
+    "id": 3,
+    "productId": 3,
+    "productName": "Notebook",
+    "quantity": 50,
+    "reorderLevel": 20
+  }
+]

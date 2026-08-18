@@ -1,0 +1,60 @@
+[
+  {
+    "id": 3,
+    "name": "Notebook",
+    "category": "Stationery",
+    "price": 300,
+    "quantity": 11,
+    "supplier": "Office Supplier"
+  },
+  {
+    "id": 4,
+    "name": "USB Cable",
+    "category": "Electronics",
+    "price": 800,
+    "quantity": 30,
+    "supplier": "ABC Electronics"
+  },
+  {
+    "id": 5,
+    "name": "LED",
+    "category": "Elec",
+    "price": 20000,
+    "quantity": 200,
+    "supplier": "ABC"
+  },
+  {
+    "id": 6,
+    "name": "watch",
+    "category": "Watch",
+    "price": 1500,
+    "quantity": 25,
+    "supplier": "ABC"
+  },
+  {
+    "id": 7,
+    "name": "Laptop",
+    "category": "Electronics",
+    "price": 200000,
+    "quantity": 12,
+    "supplier": "ABC",
+    "image": "/uploads/products/product-1786821102204.jpg"
+  },
+  {
+    "id": 8,
+    "name": "Head-Phones",
+    "category": "head-phones",
+    "price": 2000,
+    "quantity": 20,
+    "supplier": "ABC",
+    "images": [
+      "/uploads/products/product-1786845202573.jpg",
+      "/uploads/products/product-1786845202577.jpg",
+      "/uploads/products/product-1786845202582.jpg",
+      "/uploads/products/product-1786845202589.jpg",
+      "/uploads/products/product-1786845202590.jpg",
+      "/uploads/products/product-1786845202591.jpg"
+    ],
+    "image": "/uploads/products/product-1786845202573.jpg"
+  }
+]
