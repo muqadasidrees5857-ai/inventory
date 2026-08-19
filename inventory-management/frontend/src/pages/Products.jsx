@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import AddProductModal from '../components/AddProductModal';
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import AddProductModal from "../components/AddProductModal";
+
 const Products = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -11,6 +12,7 @@ const Products = () => {
       const response = await axios.get(
         `${import.meta.env.VITE_API_URL}/api/products`
       );
+
       setProducts(response.data.products || response.data);
     } catch (error) {
       console.error("Unable to fetch products:", error);
@@ -43,32 +45,188 @@ const Products = () => {
   };
 
   const handleProductAdded = (newProduct) => {
-    setProducts((currentProducts) => [...currentProducts, newProduct]);
+    setProducts((currentProducts) => [
+      ...currentProducts,
+      newProduct,
+    ]);
   };
 
   return (
-    <div>
-      <h1>Products</h1>
-      <button onClick={() => setIsModalOpen(true)}>Add New Product</button>
+    <div className="products-page">
+
+      {/* =========================
+          PAGE HEADER
+      ========================= */}
+
+      <div className="page-heading">
+
+        <div>
+          <p className="eyebrow">INVENTORY</p>
+
+          <h1>Products</h1>
+
+          <p>
+            Manage your inventory products.
+          </p>
+        </div>
+
+        <button
+          className="primary-btn"
+          onClick={() => setIsModalOpen(true)}
+        >
+          Add New Product
+        </button>
+
+      </div>
+
+
+      {/* =========================
+          PRODUCTS PANEL
+      ========================= */}
 
       {loading ? (
-        <p>Loading products...</p>
+
+        <div className="products-panel">
+
+          <div className="empty-state">
+            <p>Loading products...</p>
+          </div>
+
+        </div>
+
       ) : (
-        <ul>
-          {products.map((product) => (
-            <li key={product.id}>
-              <span>{product.name} - ${product.price}</span>
-              <button onClick={() => handleDelete(product.id)}>Delete</button>
-            </li>
-          ))}
-        </ul>
+
+        <div className="products-panel">
+
+          <div className="products-toolbar">
+
+            <div className="product-count">
+              {products.length}{" "}
+              {products.length === 1
+                ? "Product"
+                : "Products"}
+            </div>
+
+          </div>
+
+
+          {/* =========================
+              PRODUCTS TABLE
+          ========================= */}
+
+          {products.length === 0 ? (
+
+            <div className="empty-state">
+              <p>No products found.</p>
+            </div>
+
+          ) : (
+
+            <div className="table-wrapper">
+
+              <table className="products-table">
+
+                <thead>
+                  <tr>
+                    <th>Product</th>
+                    <th>Category</th>
+                    <th>Price</th>
+                    <th>Quantity</th>
+                    <th>Supplier</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+
+                  {products.map((product) => (
+
+                    <tr key={product.id}>
+
+                      <td>
+                        <div className="product-table-name">
+
+                          <div className="product-avatar">
+                            {product.name
+                              ? product.name
+                                  .charAt(0)
+                                  .toUpperCase()
+                              : "P"}
+                          </div>
+
+                          <strong>
+                            {product.name}
+                          </strong>
+
+                        </div>
+                      </td>
+
+                      <td>
+                        <span className="category-badge">
+                          {product.category || "N/A"}
+                        </span>
+                      </td>
+
+                      <td>
+                        Rs.{" "}
+                        {Number(
+                          product.price
+                        ).toLocaleString()}
+                      </td>
+
+                      <td>
+                        {product.quantity ?? 0}
+                      </td>
+
+                      <td>
+                        {product.supplier || "N/A"}
+                      </td>
+
+                      <td>
+
+                        <div className="action-buttons">
+
+                          <button
+                            className="icon-btn delete-btn"
+                            onClick={() =>
+                              handleDelete(product.id)
+                            }
+                            title="Delete product"
+                          >
+                            Delete
+                          </button>
+
+                        </div>
+
+                      </td>
+
+                    </tr>
+
+                  ))}
+
+                </tbody>
+
+              </table>
+
+            </div>
+
+          )}
+
+        </div>
+
       )}
+
+
+      {/* =========================
+          ADD PRODUCT MODAL
+      ========================= */}
 
       <AddProductModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onProductAdded={handleProductAdded}
       />
+
     </div>
   );
 };

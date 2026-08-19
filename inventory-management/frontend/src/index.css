@@ -2284,3 +2284,122 @@ select {
 .admin-logout-btn svg {
   flex-shrink: 0;
 }
+/* =========================================
+   ADD PRODUCT MODAL - CURRENT FORM
+   ========================================= */
+
+.modal-content {
+  width: 100%;
+  max-width: 650px;
+  max-height: calc(100vh - 60px);
+
+  background: #ffffff;
+  border-radius: 16px;
+
+  padding: 28px;
+
+  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.2);
+
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.modal-content h2 {
+  margin: 0 0 24px;
+  font-size: 24px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.modal-content form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.modal-content input {
+  width: 100%;
+  box-sizing: border-box;
+
+  padding: 12px 14px;
+
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+
+  background: #ffffff;
+  color: #111827;
+
+  font-size: 14px;
+
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.modal-content input:focus {
+  border-color: #94a3b8;
+  box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.15);
+}
+
+.modal-content input::placeholder {
+  color: #9ca3af;
+}
+
+.modal-content button {
+  padding: 12px 18px;
+
+  border: none;
+  border-radius: 8px;
+
+  font-size: 14px;
+  font-weight: 600;
+
+  cursor: pointer;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.modal-content button[type="submit"] {
+  background: #111827;
+  color: #ffffff;
+}
+
+.modal-content button[type="submit"]:hover {
+  opacity: 0.9;
+}
+
+.modal-content button[type="submit"]:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.modal-content button[type="button"] {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.modal-content button[type="button"]:hover {
+  background: #e2e8f0;
+}
+
+.form-error {
+  padding: 10px 12px;
+
+  border-radius: 8px;
+
+  background: #fef2f2;
+  color: #dc2626;
+
+  font-size: 13px;
+}
+
+/* Mobile */
+@media (max-width: 700px) {
+  .modal-content {
+    max-height: calc(100vh - 30px);
+    padding: 20px;
+    border-radius: 14px;
+  }
+
+  .modal-content h2 {
+    font-size: 21px;
+  }
+}

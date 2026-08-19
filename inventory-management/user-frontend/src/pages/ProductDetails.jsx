@@ -39,8 +39,8 @@ function ProductDetails() {
       try {
 
         const response = await axios.get(
-          `${import.meta.env.VITE_API_URL}/api/products/${product.id}`,
-        );
+  `${import.meta.env.VITE_API_URL}/api/products/${id}`,
+);
 
         const products =
           response.data.products || [];
