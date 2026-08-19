@@ -1,6 +1,6 @@
-
 import React, { useState } from "react";
 import axios from "axios";
+import { X } from "lucide-react";
 
 const AddProductModal = ({
   isOpen,
@@ -70,58 +70,149 @@ const AddProductModal = ({
 
   return (
     <div className="modal-overlay">
-      <div className="modal-content">
+      <div className="product-modal">
 
-        <h2>Add Product</h2>
+        {/* =========================
+            MODAL HEADER
+        ========================= */}
+
+        <div className="modal-header">
+
+          <div>
+            <h2>Add Product</h2>
+
+            <p>
+              Add a new product to your inventory.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            className="modal-close"
+            onClick={onClose}
+            aria-label="Close"
+          >
+            <X size={18} />
+          </button>
+
+        </div>
+
+
+        {/* =========================
+            FORM
+        ========================= */}
 
         <form onSubmit={handleSubmit}>
 
-          <input
-            type="text"
-            name="name"
-            placeholder="Product Name"
-            value={formData.name}
-            onChange={handleChange}
-            required
-          />
+          <div className="form-grid">
 
-          <input
-            type="text"
-            name="category"
-            placeholder="Category"
-            value={formData.category}
-            onChange={handleChange}
-            required
-          />
+            {/* Product Name */}
 
-          <input
-            type="number"
-            name="price"
-            placeholder="Price"
-            value={formData.price}
-            onChange={handleChange}
-            min="0"
-            required
-          />
+            <div className="form-group">
 
-          <input
-            type="number"
-            name="quantity"
-            placeholder="Quantity"
-            value={formData.quantity}
-            onChange={handleChange}
-            min="0"
-            required
-          />
+              <label>
+                Product Name
+              </label>
 
-          <input
-            type="text"
-            name="supplier"
-            placeholder="Supplier"
-            value={formData.supplier}
-            onChange={handleChange}
-            required
-          />
+              <input
+                type="text"
+                name="name"
+                placeholder="Enter product name"
+                value={formData.name}
+                onChange={handleChange}
+                required
+              />
+
+            </div>
+
+
+            {/* Category */}
+
+            <div className="form-group">
+
+              <label>
+                Category
+              </label>
+
+              <input
+                type="text"
+                name="category"
+                placeholder="Enter category"
+                value={formData.category}
+                onChange={handleChange}
+                required
+              />
+
+            </div>
+
+
+            {/* Price */}
+
+            <div className="form-group">
+
+              <label>
+                Price
+              </label>
+
+              <input
+                type="number"
+                name="price"
+                placeholder="Enter price"
+                value={formData.price}
+                onChange={handleChange}
+                min="0"
+                required
+              />
+
+            </div>
+
+
+            {/* Quantity */}
+
+            <div className="form-group">
+
+              <label>
+                Quantity
+              </label>
+
+              <input
+                type="number"
+                name="quantity"
+                placeholder="Enter quantity"
+                value={formData.quantity}
+                onChange={handleChange}
+                min="0"
+                required
+              />
+
+            </div>
+
+
+            {/* Supplier */}
+
+            <div className="form-group full-width">
+
+              <label>
+                Supplier
+              </label>
+
+              <input
+                type="text"
+                name="supplier"
+                placeholder="Enter supplier name"
+                value={formData.supplier}
+                onChange={handleChange}
+                required
+              />
+
+            </div>
+
+          </div>
+
+
+          {/* =========================
+              ERROR
+          ========================= */}
 
           {error && (
             <div className="form-error">
@@ -129,21 +220,36 @@ const AddProductModal = ({
             </div>
           )}
 
-          <button
-            type="submit"
-            disabled={loading}
-          >
-            {loading ? "Adding..." : "Add Product"}
-          </button>
 
-          <button
-            type="button"
-            onClick={onClose}
-          >
-            Cancel
-          </button>
+          {/* =========================
+              ACTION BUTTONS
+          ========================= */}
+
+          <div className="modal-actions">
+
+            <button
+              type="button"
+              className="cancel-btn"
+              onClick={onClose}
+              disabled={loading}
+            >
+              Cancel
+            </button>
+
+            <button
+              type="submit"
+              className="primary-btn"
+              disabled={loading}
+            >
+              {loading
+                ? "Adding..."
+                : "Add Product"}
+            </button>
+
+          </div>
 
         </form>
+
       </div>
     </div>
   );
