@@ -1,3 +1,4 @@
+
 const express = require("express");
 const cors = require("cors");
 
@@ -7,21 +8,33 @@ const errorHandler = require("../shared/middleware/errorHandler");
 const { supabase } = require("../config/supabase");
 
 const app = express();
+
 const PORT = process.env.PORT || 5000;
 
-// Railway backend URL
-const RAILWAY_PRODUCT_SERVER = process.env.PRODUCT_SERVER_URL || "https://strong-curiosity-production-1ac7.up.railway.app";
+const RAILWAY_PRODUCT_SERVER =
+  process.env.PRODUCT_SERVER_URL ||
+  "https://strong-curiosity-production-1ac7.up.railway.app";
+
+const RAILWAY_STOCK_SERVER =
+  process.env.STOCK_SERVER_URL ||
+  "https://YOUR-STOCK-SERVER.up.railway.app";
 
 // =====================================================
 // MIDDLEWARE
 // =====================================================
 
-app.use(cors());
+app.use(
+  cors({
+    origin: true,
+    credentials: true,
+  })
+);
+
 app.use(express.json());
 app.use(logger);
 
 // =====================================================
-// REGISTER - SUPABASE AUTH
+// AUTH - REGISTER
 // =====================================================
 
 app.post("/api/auth/register", async (req, res, next) => {
@@ -47,7 +60,7 @@ app.post("/api/auth/register", async (req, res, next) => {
 
     const { data, error } = await supabase.auth.signUp({
       email: cleanEmail,
-      password: password,
+      password,
       options: {
         data: {
           name: cleanName,
@@ -65,7 +78,7 @@ app.post("/api/auth/register", async (req, res, next) => {
       });
     }
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       message: "Account created successfully!",
       user: data.user,
@@ -77,7 +90,7 @@ app.post("/api/auth/register", async (req, res, next) => {
 });
 
 // =====================================================
-// LOGIN - SUPABASE AUTH + LOGIN LOG
+// AUTH - LOGIN
 // =====================================================
 
 app.post("/api/auth/login", async (req, res, next) => {
@@ -96,7 +109,7 @@ app.post("/api/auth/login", async (req, res, next) => {
     const { data, error } =
       await supabase.auth.signInWithPassword({
         email: cleanEmail,
-        password: password,
+        password,
       });
 
     if (error) {
@@ -138,10 +151,10 @@ app.post("/api/auth/login", async (req, res, next) => {
       );
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: "Login successful!",
-      user: user,
+      user,
       session: data.session,
     });
   } catch (error) {
@@ -151,10 +164,9 @@ app.post("/api/auth/login", async (req, res, next) => {
 });
 
 // =====================================================
-// ORDERS ROUTES
+// ORDERS - PLACE ORDER
 // =====================================================
 
-// Place Order
 app.post("/api/orders", async (req, res, next) => {
   try {
     const {
@@ -179,8 +191,8 @@ app.post("/api/orders", async (req, res, next) => {
           customer_phone: customer?.phone,
           customer_address: customer?.address,
           customer_city: customer?.city,
-          items: items,
-          subtotal: subtotal,
+          items,
+          subtotal,
           delivery_fee: delivery,
           total_amount: total,
           payment_method: paymentMethod,
@@ -200,22 +212,21 @@ app.post("/api/orders", async (req, res, next) => {
       });
     }
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       message: "Order placed successfully!",
       order: data[0],
     });
   } catch (error) {
-    console.error(
-      "Order Route Exception:",
-      error
-    );
-
+    console.error("Order Route Exception:", error);
     next(error);
   }
 });
 
-// Fetch All Orders
+// =====================================================
+// ORDERS - GET ALL
+// =====================================================
+
 app.get("/api/orders", async (req, res, next) => {
   try {
     const { data, error } = await supabase
@@ -232,7 +243,7 @@ app.get("/api/orders", async (req, res, next) => {
       });
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       orders: data,
     });
@@ -242,61 +253,132 @@ app.get("/api/orders", async (req, res, next) => {
 });
 
 // =====================================================
-// PRODUCTS (PROXY TO RAILWAY SERVER)
+// PRODUCTS - GET
 // =====================================================
 
-// Get Products
 app.get("/api/products", async (req, res, next) => {
   try {
-    const response = await fetch(`${RAILWAY_PRODUCT_SERVER}/api/products`);
-    const data = await response.json();
-    res.status(response.status).json(data);
-  } catch (error) {
-    next(error);
-  }
-});
-
-// Add Product (POST)
-app.post("/api/products", async (req, res, next) => {
-  try {
-    const response = await fetch(`${RAILWAY_PRODUCT_SERVER}/api/products`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(req.body),
-    });
+    const response = await fetch(
+      `${RAILWAY_PRODUCT_SERVER}/api/products`
+    );
 
     const data = await response.json();
-    res.status(response.status).json(data);
+
+    return res
+      .status(response.status)
+      .json(data);
   } catch (error) {
+    console.error(
+      "Product GET Proxy Error:",
+      error
+    );
+
     next(error);
   }
 });
 
 // =====================================================
-// GET STOCK
+// PRODUCTS - ADD
+// =====================================================
+
+app.post("/api/products", async (req, res, next) => {
+  try {
+    console.log(
+      "ADD PRODUCT REQUEST:",
+      req.body
+    );
+
+    const response = await fetch(
+      `${RAILWAY_PRODUCT_SERVER}/api/products`,
+      {
+        method: "POST",
+
+        headers: {
+          "Content-Type": "application/json",
+        },
+
+        body: JSON.stringify(req.body),
+      }
+    );
+
+    const text = await response.text();
+
+    let data;
+
+    try {
+      data = JSON.parse(text);
+    } catch {
+      data = {
+        success: false,
+        message: text || "Product server returned an invalid response.",
+      };
+    }
+
+    console.log(
+      "PRODUCT SERVER RESPONSE:",
+      response.status,
+      data
+    );
+
+    return res
+      .status(response.status)
+      .json(data);
+  } catch (error) {
+    console.error(
+      "Product POST Proxy Error:",
+      error
+    );
+
+    next(error);
+  }
+});
+
+// =====================================================
+// STOCK - GET
 // =====================================================
 
 app.get("/api/stock", async (req, res, next) => {
   try {
-    const stockServer = process.env.STOCK_SERVER_URL || "http://localhost:5002";
-    const response = await fetch(`${stockServer}/api/stock`);
+    const response = await fetch(
+      `${RAILWAY_STOCK_SERVER}/api/stock`
+    );
+
     const data = await response.json();
-    res.status(response.status).json(data);
+
+    return res
+      .status(response.status)
+      .json(data);
   } catch (error) {
+    console.error(
+      "Stock GET Proxy Error:",
+      error
+    );
+
     next(error);
   }
 });
 
-// Get Low Stock
+// =====================================================
+// STOCK - LOW STOCK
+// =====================================================
+
 app.get("/api/stock/low", async (req, res, next) => {
   try {
-    const stockServer = process.env.STOCK_SERVER_URL || "http://localhost:5002";
-    const response = await fetch(`${stockServer}/api/stock/low`);
+    const response = await fetch(
+      `${RAILWAY_STOCK_SERVER}/api/stock/low`
+    );
+
     const data = await response.json();
-    res.status(response.status).json(data);
+
+    return res
+      .status(response.status)
+      .json(data);
   } catch (error) {
+    console.error(
+      "Low Stock Proxy Error:",
+      error
+    );
+
     next(error);
   }
 });
@@ -308,43 +390,63 @@ app.get("/api/stock/low", async (req, res, next) => {
 app.get("/", (req, res) => {
   res.json({
     success: true,
-    message: "Inventory Management Main Server is running!",
+    message:
+      "Inventory Management Main Server is running!",
   });
 });
 
 // =====================================================
-// SUPABASE CONNECTION TEST
+// SUPABASE TEST
 // =====================================================
 
-app.get("/api/test-supabase", async (req, res) => {
-  try {
-    const { data, error } = await supabase.auth.getSession();
+app.get(
+  "/api/test-supabase",
+  async (req, res) => {
+    try {
+      const { data, error } =
+        await supabase.auth.getSession();
 
-    if (error) {
+      if (error) {
+        return res.status(500).json({
+          success: false,
+          message: error.message,
+        });
+      }
+
+      return res.json({
+        success: true,
+        message:
+          "Supabase connected successfully!",
+      });
+    } catch (error) {
       return res.status(500).json({
         success: false,
         message: error.message,
       });
     }
-
-    res.json({
-      success: true,
-      message: "Supabase connected successfully!",
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
   }
-});
+);
 
 // =====================================================
-// ERROR HANDLER & START
+// ERROR HANDLER
 // =====================================================
 
 app.use(errorHandler);
 
+// =====================================================
+// START SERVER
+// =====================================================
+
 app.listen(PORT, () => {
-  console.log(`Main Server running on port ${PORT}`);
+  console.log(
+    `Main Server running on port ${PORT}`
+  );
+
+  console.log(
+    `Product Server: ${RAILWAY_PRODUCT_SERVER}`
+  );
+
+  console.log(
+    `Stock Server: ${RAILWAY_STOCK_SERVER}`
+  );
 });
