@@ -1,4 +1,3 @@
-
 const express = require("express");
 const cors = require("cors");
 
@@ -8,7 +7,10 @@ const errorHandler = require("../shared/middleware/errorHandler");
 const { supabase } = require("../config/supabase");
 
 const app = express();
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
+
+// Railway backend URL
+const RAILWAY_PRODUCT_SERVER = process.env.PRODUCT_SERVER_URL || "https://strong-curiosity-production-1ac7.up.railway.app";
 
 // =====================================================
 // MIDDLEWARE
@@ -240,23 +242,32 @@ app.get("/api/orders", async (req, res, next) => {
 });
 
 // =====================================================
-// GET PRODUCTS
-// PROXY TO RAILWAY PRODUCT SERVER
+// PRODUCTS (PROXY TO RAILWAY SERVER)
 // =====================================================
 
+// Get Products
 app.get("/api/products", async (req, res, next) => {
   try {
-    const response = await fetch(
-      "https://strong-curiosity-production.up.railway.app/api/products"
-    );
+    const response = await fetch(`${RAILWAY_PRODUCT_SERVER}/api/products`);
+    const data = await response.json();
+    res.status(response.status).json(data);
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Add Product (POST)
+app.post("/api/products", async (req, res, next) => {
+  try {
+    const response = await fetch(`${RAILWAY_PRODUCT_SERVER}/api/products`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(req.body),
+    });
 
     const data = await response.json();
-
-    console.log(
-      "PRODUCT RESPONSE FROM PRODUCT SERVER:",
-      data
-    );
-
     res.status(response.status).json(data);
   } catch (error) {
     next(error);
@@ -269,38 +280,26 @@ app.get("/api/products", async (req, res, next) => {
 
 app.get("/api/stock", async (req, res, next) => {
   try {
-    const response = await fetch(
-      "http://localhost:5002/api/stock"
-    );
-
+    const stockServer = process.env.STOCK_SERVER_URL || "http://localhost:5002";
+    const response = await fetch(`${stockServer}/api/stock`);
     const data = await response.json();
-
     res.status(response.status).json(data);
   } catch (error) {
     next(error);
   }
 });
 
-// =====================================================
-// GET LOW STOCK
-// =====================================================
-
-app.get(
-  "/api/stock/low",
-  async (req, res, next) => {
-    try {
-      const response = await fetch(
-        "http://localhost:5002/api/stock/low"
-      );
-
-      const data = await response.json();
-
-      res.status(response.status).json(data);
-    } catch (error) {
-      next(error);
-    }
+// Get Low Stock
+app.get("/api/stock/low", async (req, res, next) => {
+  try {
+    const stockServer = process.env.STOCK_SERVER_URL || "http://localhost:5002";
+    const response = await fetch(`${stockServer}/api/stock/low`);
+    const data = await response.json();
+    res.status(response.status).json(data);
+  } catch (error) {
+    next(error);
   }
-);
+});
 
 // =====================================================
 // MAIN SERVER TEST
@@ -309,8 +308,7 @@ app.get(
 app.get("/", (req, res) => {
   res.json({
     success: true,
-    message:
-      "Inventory Management Main Server is running!",
+    message: "Inventory Management Main Server is running!",
   });
 });
 
@@ -318,48 +316,35 @@ app.get("/", (req, res) => {
 // SUPABASE CONNECTION TEST
 // =====================================================
 
-app.get(
-  "/api/test-supabase",
-  async (req, res) => {
-    try {
-      const {
-        data,
-        error,
-      } = await supabase.auth.getSession();
+app.get("/api/test-supabase", async (req, res) => {
+  try {
+    const { data, error } = await supabase.auth.getSession();
 
-      if (error) {
-        return res.status(500).json({
-          success: false,
-          message: error.message,
-        });
-      }
-
-      res.json({
-        success: true,
-        message:
-          "Supabase connected successfully!",
-      });
-    } catch (error) {
-      res.status(500).json({
+    if (error) {
+      return res.status(500).json({
         success: false,
         message: error.message,
       });
     }
+
+    res.json({
+      success: true,
+      message: "Supabase connected successfully!",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
-);
+});
 
 // =====================================================
-// ERROR HANDLER
+// ERROR HANDLER & START
 // =====================================================
 
 app.use(errorHandler);
 
-// =====================================================
-// START SERVER
-// =====================================================
-
 app.listen(PORT, () => {
-  console.log(
-    `Main Server running on http://localhost:${PORT}`
-  );
+  console.log(`Main Server running on port ${PORT}`);
 });
