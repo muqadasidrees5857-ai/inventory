@@ -18,7 +18,8 @@ function Orders() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const API_URL = `${import.meta.env.VITE_API_URL}/api/products/${product.id}`,
+  const BASE_URL = import.meta.env.VITE_API_URL || "https://strong-curiosity-production-1ac7.up.railway.app";
+const API_URL = `${BASE_URL}/api/orders`;
 
   // =====================================================
   // FETCH ORDERS
