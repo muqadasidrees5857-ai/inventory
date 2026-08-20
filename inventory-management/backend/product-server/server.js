@@ -397,6 +397,68 @@ app.get("/api/orders", async (req, res) => {
 });
 
 // =====================================================
+// PLACE ORDER (NEWLY ADDED)
+// =====================================================
+
+app.post("/api/orders", async (req, res) => {
+  try {
+    const {
+      customer,
+      items,
+      subtotal,
+      delivery,
+      total,
+      paymentMethod,
+      paymentDetails,
+      userId,
+      userEmail,
+    } = req.body;
+
+    const { data, error } = await supabase
+      .from("orders")
+      .insert([
+        {
+          user_id: userId || null,
+          user_email: userEmail || null,
+          customer_name: customer?.name,
+          customer_phone: customer?.phone,
+          customer_address: customer?.address,
+          customer_city: customer?.city,
+          items,
+          subtotal,
+          delivery_fee: delivery,
+          total_amount: total,
+          payment_method: paymentMethod,
+          payment_details: paymentDetails,
+          order_status: "Pending",
+          created_at: new Date().toISOString(),
+        },
+      ])
+      .select();
+
+    if (error) {
+      console.error("SUPABASE PLACE ORDER ERROR:", error);
+      return res.status(400).json({
+        success: false,
+        message: error.message,
+      });
+    }
+
+    return res.status(201).json({
+      success: true,
+      message: "Order placed successfully!",
+      order: data[0],
+    });
+  } catch (error) {
+    console.error("PLACE ORDER EXCEPTION:", error);
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+});
+
+// =====================================================
 // START SERVER
 // =====================================================
 
