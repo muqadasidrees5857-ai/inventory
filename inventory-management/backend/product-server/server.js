@@ -18,7 +18,7 @@ app.use(
   cors({
     origin: "*",
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    allowedHeaders: ["Content-Type", "Authorization", "Cache-Control", "Pragma", "Expires"],
   })
 );
 
@@ -397,7 +397,7 @@ app.get("/api/orders", async (req, res) => {
 });
 
 // =====================================================
-// PLACE ORDER (NEWLY ADDED)
+// PLACE ORDER
 // =====================================================
 
 app.post("/api/orders", async (req, res) => {
@@ -451,6 +451,43 @@ app.post("/api/orders", async (req, res) => {
     });
   } catch (error) {
     console.error("PLACE ORDER EXCEPTION:", error);
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+});
+
+// =====================================================
+// UPDATE ORDER STATUS
+// =====================================================
+
+app.put("/api/orders/:id/status", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    const { data, error } = await supabase
+      .from("orders")
+      .update({ order_status: status })
+      .eq("id", id)
+      .select();
+
+    if (error) {
+      console.error("UPDATE STATUS ERROR:", error);
+      return res.status(400).json({
+        success: false,
+        message: error.message,
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Order status updated successfully!",
+      order: data[0],
+    });
+  } catch (error) {
+    console.error("UPDATE STATUS EXCEPTION:", error);
     return res.status(500).json({
       success: false,
       message: error.message,
