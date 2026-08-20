@@ -14,7 +14,8 @@ const AddProductModal = ({
     quantity: "",
     supplier: "",
   });
-  const [image, setImage] = useState(null);
+
+  const [image, setImage] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -27,10 +28,25 @@ const AddProductModal = ({
     });
   };
 
+  // =========================
+  // IMAGE SELECTION
+  // Maximum 6 images
+  // =========================
   const handleImageChange = (e) => {
-    setImage(e.target.files[0]);
+    const selectedImages = Array.from(e.target.files);
+
+    if (selectedImages.length > 6) {
+      setError("You can upload maximum 6 images.");
+      return;
+    }
+
+    setImage(selectedImages);
+    setError("");
   };
 
+  // =========================
+  // ADD PRODUCT
+  // =========================
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -39,28 +55,26 @@ const AddProductModal = ({
 
     try {
       const data = new FormData();
+
       data.append("name", formData.name);
       data.append("category", formData.category);
       data.append("price", Number(formData.price));
       data.append("quantity", Number(formData.quantity));
       data.append("supplier", formData.supplier);
-      
-      if (image) {
-        data.append("image", image);
-      }
+
+      // Add all selected images
+      image.forEach((file) => {
+        data.append("images", file);
+      });
 
       const response = await axios.post(
         `${import.meta.env.VITE_API_URL}/api/products`,
-        data,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
+        data
       );
 
       onProductAdded(response.data.product);
 
+      // Reset form
       setFormData({
         name: "",
         category: "",
@@ -68,7 +82,8 @@ const AddProductModal = ({
         quantity: "",
         supplier: "",
       });
-      setImage(null);
+
+      setImage([]);
 
       onClose();
     } catch (error) {
@@ -87,11 +102,18 @@ const AddProductModal = ({
     <div className="modal-overlay">
       <div className="product-modal">
 
-        {/* MODAL HEADER */}
+        {/* =========================
+            MODAL HEADER
+        ========================= */}
+
         <div className="modal-header">
+
           <div>
             <h2>Add Product</h2>
-            <p>Add a new product to your inventory.</p>
+
+            <p>
+              Add a new product to your inventory.
+            </p>
           </div>
 
           <button
@@ -102,15 +124,26 @@ const AddProductModal = ({
           >
             <X size={18} />
           </button>
+
         </div>
 
-        {/* FORM */}
+
+        {/* =========================
+            FORM
+        ========================= */}
+
         <form onSubmit={handleSubmit}>
+
           <div className="form-grid">
 
             {/* Product Name */}
+
             <div className="form-group">
-              <label>Product Name</label>
+
+              <label>
+                Product Name
+              </label>
+
               <input
                 type="text"
                 name="name"
@@ -119,11 +152,18 @@ const AddProductModal = ({
                 onChange={handleChange}
                 required
               />
+
             </div>
 
+
             {/* Category */}
+
             <div className="form-group">
-              <label>Category</label>
+
+              <label>
+                Category
+              </label>
+
               <input
                 type="text"
                 name="category"
@@ -132,11 +172,18 @@ const AddProductModal = ({
                 onChange={handleChange}
                 required
               />
+
             </div>
 
+
             {/* Price */}
+
             <div className="form-group">
-              <label>Price</label>
+
+              <label>
+                Price
+              </label>
+
               <input
                 type="number"
                 name="price"
@@ -146,11 +193,18 @@ const AddProductModal = ({
                 min="0"
                 required
               />
+
             </div>
 
+
             {/* Quantity */}
+
             <div className="form-group">
-              <label>Quantity</label>
+
+              <label>
+                Quantity
+              </label>
+
               <input
                 type="number"
                 name="quantity"
@@ -160,11 +214,18 @@ const AddProductModal = ({
                 min="0"
                 required
               />
+
             </div>
 
+
             {/* Supplier */}
+
             <div className="form-group full-width">
-              <label>Supplier</label>
+
+              <label>
+                Supplier
+              </label>
+
               <input
                 type="text"
                 name="supplier"
@@ -173,30 +234,48 @@ const AddProductModal = ({
                 onChange={handleChange}
                 required
               />
+
             </div>
 
-            {/* Product Image */}
+
+            {/* Product Images */}
+
             <div className="form-group full-width">
-              <label>Product Image</label>
+
+              <label>
+                Product Images
+              </label>
+
               <input
                 type="file"
-                name="image"
+                name="images"
                 accept="image/*"
+                multiple
                 onChange={handleImageChange}
               />
+
             </div>
 
           </div>
 
-          {/* ERROR */}
+
+          {/* =========================
+              ERROR
+          ========================= */}
+
           {error && (
             <div className="form-error">
               {error}
             </div>
           )}
 
-          {/* ACTION BUTTONS */}
+
+          {/* =========================
+              ACTION BUTTONS
+          ========================= */}
+
           <div className="modal-actions">
+
             <button
               type="button"
               className="cancel-btn"
@@ -211,8 +290,11 @@ const AddProductModal = ({
               className="primary-btn"
               disabled={loading}
             >
-              {loading ? "Adding..." : "Add Product"}
+              {loading
+                ? "Adding..."
+                : "Add Product"}
             </button>
+
           </div>
 
         </form>

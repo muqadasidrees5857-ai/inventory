@@ -13,9 +13,11 @@ const Products = () => {
         `${import.meta.env.VITE_API_URL}/api/products`
       );
 
-      setProducts(response.data.products || response.data);
+      const data = response.data?.products || response.data;
+      setProducts(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Unable to fetch products:", error);
+      setProducts([]);
     } finally {
       setLoading(false);
     }
@@ -36,7 +38,9 @@ const Products = () => {
       );
 
       setProducts((currentProducts) =>
-        currentProducts.filter((product) => product.id !== id)
+        (Array.isArray(currentProducts) ? currentProducts : []).filter(
+          (product) => product.id !== id
+        )
       );
     } catch (error) {
       console.error("Unable to delete product:", error);
@@ -44,30 +48,20 @@ const Products = () => {
     }
   };
 
-  const handleProductAdded = (newProduct) => {
-    setProducts((currentProducts) => [
-      ...currentProducts,
-      newProduct,
-    ]);
+  const handleProductAdded = () => {
+    fetchProducts();
   };
+
+  const safeProducts = Array.isArray(products) ? products : [];
 
   return (
     <div className="products-page">
-
-      {/* =========================
-          PAGE HEADER
-      ========================= */}
-
+      {/* PAGE HEADER */}
       <div className="page-heading">
-
         <div>
           <p className="eyebrow">INVENTORY</p>
-
           <h1>Products</h1>
-
-          <p>
-            Manage your inventory products.
-          </p>
+          <p>Manage your inventory products.</p>
         </div>
 
         <button
@@ -76,56 +70,32 @@ const Products = () => {
         >
           Add New Product
         </button>
-
       </div>
 
-
-      {/* =========================
-          PRODUCTS PANEL
-      ========================= */}
-
+      {/* PRODUCTS PANEL */}
       {loading ? (
-
         <div className="products-panel">
-
           <div className="empty-state">
             <p>Loading products...</p>
           </div>
-
         </div>
-
       ) : (
-
         <div className="products-panel">
-
           <div className="products-toolbar">
-
             <div className="product-count">
-              {products.length}{" "}
-              {products.length === 1
-                ? "Product"
-                : "Products"}
+              {safeProducts.length}{" "}
+              {safeProducts.length === 1 ? "Product" : "Products"}
             </div>
-
           </div>
 
-
-          {/* =========================
-              PRODUCTS TABLE
-          ========================= */}
-
-          {products.length === 0 ? (
-
+          {/* PRODUCTS TABLE */}
+          {safeProducts.length === 0 ? (
             <div className="empty-state">
               <p>No products found.</p>
             </div>
-
           ) : (
-
             <div className="table-wrapper">
-
               <table className="products-table">
-
                 <thead>
                   <tr>
                     <th>Product</th>
@@ -138,26 +108,16 @@ const Products = () => {
                 </thead>
 
                 <tbody>
-
-                  {products.map((product) => (
-
+                  {safeProducts.map((product) => (
                     <tr key={product.id}>
-
                       <td>
                         <div className="product-table-name">
-
                           <div className="product-avatar">
                             {product.name
-                              ? product.name
-                                  .charAt(0)
-                                  .toUpperCase()
+                              ? product.name.charAt(0).toUpperCase()
                               : "P"}
                           </div>
-
-                          <strong>
-                            {product.name}
-                          </strong>
-
+                          <strong>{product.name}</strong>
                         </div>
                       </td>
 
@@ -169,64 +129,39 @@ const Products = () => {
 
                       <td>
                         Rs.{" "}
-                        {Number(
-                          product.price
-                        ).toLocaleString()}
+                        {Number(product.price || 0).toLocaleString()}
                       </td>
 
-                      <td>
-                        {product.quantity ?? 0}
-                      </td>
+                      <td>{product.quantity ?? 0}</td>
+
+                      <td>{product.supplier || "N/A"}</td>
 
                       <td>
-                        {product.supplier || "N/A"}
-                      </td>
-
-                      <td>
-
                         <div className="action-buttons">
-
                           <button
                             className="icon-btn delete-btn"
-                            onClick={() =>
-                              handleDelete(product.id)
-                            }
+                            onClick={() => handleDelete(product.id)}
                             title="Delete product"
                           >
                             Delete
                           </button>
-
                         </div>
-
                       </td>
-
                     </tr>
-
                   ))}
-
                 </tbody>
-
               </table>
-
             </div>
-
           )}
-
         </div>
-
       )}
 
-
-      {/* =========================
-          ADD PRODUCT MODAL
-      ========================= */}
-
+      {/* ADD PRODUCT MODAL */}
       <AddProductModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onProductAdded={handleProductAdded}
       />
-
     </div>
   );
 };
