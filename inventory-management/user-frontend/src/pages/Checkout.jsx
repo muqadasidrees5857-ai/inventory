@@ -1,16 +1,12 @@
 import axios from "axios";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import {
-  ArrowLeft,
-  ShoppingBag,
-} from "lucide-react";
+import { ArrowLeft, ShoppingBag } from "lucide-react";
 
 function Checkout() {
   const navigate = useNavigate();
 
-  const cart =
-    JSON.parse(localStorage.getItem("cart")) || [];
+  const cart = JSON.parse(localStorage.getItem("cart")) || [];
 
   // =========================
   // Customer Form
@@ -27,16 +23,14 @@ function Checkout() {
   // Payment
   // =========================
 
-  const [paymentMethod, setPaymentMethod] =
-    useState("COD");
+  const [paymentMethod, setPaymentMethod] = useState("COD");
 
-  const [paymentDetails, setPaymentDetails] =
-    useState({
-      accountNumber: "",
-      transactionId: "",
-      bankName: "",
-      accountTitle: "",
-    });
+  const [paymentDetails, setPaymentDetails] = useState({
+    accountNumber: "",
+    transactionId: "",
+    bankName: "",
+    accountTitle: "",
+  });
 
   // =========================
   // Other States
@@ -51,9 +45,7 @@ function Checkout() {
 
   const subtotal = cart.reduce(
     (total, item) =>
-      total +
-      Number(item.price) *
-        Number(item.cartQuantity),
+      total + Number(item.price) * Number(item.cartQuantity),
     0
   );
 
@@ -168,16 +160,14 @@ function Checkout() {
       // =========================
 
       const loggedInUser =
-        JSON.parse(
-          localStorage.getItem("user")
-        ) || null;
+        JSON.parse(localStorage.getItem("user")) || null;
 
       // =========================
       // Send Order To Backend
       // =========================
 
       const response = await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/products/${product.id}`,
+        `${import.meta.env.VITE_API_URL}/api/orders`,
         {
           customer: formData,
 
@@ -192,16 +182,12 @@ function Checkout() {
           paymentMethod,
 
           paymentDetails:
-            paymentMethod === "COD"
-              ? {}
-              : paymentDetails,
+            paymentMethod === "COD" ? {} : paymentDetails,
 
           // Send user information
-          userId:
-            loggedInUser?.id || null,
+          userId: loggedInUser?.id || loggedInUser?._id || null,
 
-          userEmail:
-            loggedInUser?.email || null,
+          userEmail: loggedInUser?.email || null,
         }
       );
 
@@ -212,22 +198,16 @@ function Checkout() {
       if (response.data.success) {
         localStorage.removeItem("cart");
 
-        alert(
-          "Order placed successfully!"
-        );
+        alert("Order placed successfully!");
 
         navigate("/orders");
       } else {
         setError(
-          response.data.message ||
-            "Unable to place order."
+          response.data.message || "Unable to place order."
         );
       }
     } catch (error) {
-      console.error(
-        "Order Error:",
-        error
-      );
+      console.error("Order Error:", error);
 
       setError(
         error.response?.data?.message ||
@@ -245,25 +225,17 @@ function Checkout() {
   if (cart.length === 0) {
     return (
       <div className="checkout-empty">
-
         <ShoppingBag size={50} />
 
-        <h1>
-          Your Cart is Empty
-        </h1>
+        <h1>Your Cart is Empty</h1>
 
         <p>
-          Add some products before
-          proceeding to checkout.
+          Add some products before proceeding to checkout.
         </p>
 
-        <Link
-          to="/products"
-          className="continue-shopping-btn"
-        >
+        <Link to="/products" className="continue-shopping-btn">
           Browse Products
         </Link>
-
       </div>
     );
   }
@@ -274,60 +246,36 @@ function Checkout() {
 
   return (
     <div className="checkout-page">
-
       {/* Header */}
 
       <div className="checkout-header">
-
-        <Link
-          to="/cart"
-          className="back-checkout"
-        >
+        <Link to="/cart" className="back-checkout">
           <ArrowLeft size={18} />
-
           Back to Cart
         </Link>
 
         <div>
+          <span className="checkout-eyebrow">CHECKOUT</span>
 
-          <span className="checkout-eyebrow">
-            CHECKOUT
-          </span>
-
-          <h1>
-            Complete Your Order
-          </h1>
+          <h1>Complete Your Order</h1>
 
           <p>
-            Enter your delivery information
-            to place your order.
+            Enter your delivery information to place your order.
           </p>
-
         </div>
-
       </div>
 
       <div className="checkout-layout">
-
-        {/* =========================
-            CUSTOMER FORM
-        ========================= */}
+        {/* CUSTOMER FORM */}
 
         <div className="checkout-form-card">
-
-          <h2>
-            Delivery Information
-          </h2>
+          <h2>Delivery Information</h2>
 
           <form onSubmit={handleSubmit}>
-
             {/* Name */}
 
             <div className="checkout-form-group">
-
-              <label>
-                Full Name
-              </label>
+              <label>Full Name</label>
 
               <input
                 type="text"
@@ -337,16 +285,12 @@ function Checkout() {
                 placeholder="Enter your full name"
                 required
               />
-
             </div>
 
             {/* Phone */}
 
             <div className="checkout-form-group">
-
-              <label>
-                Phone Number
-              </label>
+              <label>Phone Number</label>
 
               <input
                 type="tel"
@@ -356,16 +300,12 @@ function Checkout() {
                 placeholder="03XX-XXXXXXX"
                 required
               />
-
             </div>
 
             {/* Address */}
 
             <div className="checkout-form-group">
-
-              <label>
-                Complete Address
-              </label>
+              <label>Complete Address</label>
 
               <textarea
                 name="address"
@@ -375,16 +315,12 @@ function Checkout() {
                 rows="4"
                 required
               />
-
             </div>
 
             {/* City */}
 
             <div className="checkout-form-group">
-
-              <label>
-                City
-              </label>
+              <label>City</label>
 
               <input
                 type="text"
@@ -394,284 +330,174 @@ function Checkout() {
                 placeholder="Enter your city"
                 required
               />
-
             </div>
 
-            {/* =========================
-                PAYMENT METHOD
-            ========================= */}
+            {/* PAYMENT METHOD */}
 
             <div className="checkout-payment-section">
-
-              <h2>
-                Payment Method
-              </h2>
+              <h2>Payment Method</h2>
 
               <p className="payment-method-description">
                 Select how you want to pay for your order.
               </p>
 
               <div className="payment-method-options">
-
                 {/* COD */}
 
                 <label
                   className={`payment-method-option ${
-                    paymentMethod === "COD"
-                      ? "active"
-                      : ""
+                    paymentMethod === "COD" ? "active" : ""
                   }`}
                 >
-
                   <input
                     type="radio"
                     name="paymentMethod"
                     value="COD"
-                    checked={
-                      paymentMethod === "COD"
-                    }
-                    onChange={
-                      handlePaymentMethodChange
-                    }
+                    checked={paymentMethod === "COD"}
+                    onChange={handlePaymentMethodChange}
                   />
 
                   <div className="payment-method-content">
+                    <strong>Cash on Delivery</strong>
 
-                    <strong>
-                      Cash on Delivery
-                    </strong>
-
-                    <span>
-                      Pay when your order arrives.
-                    </span>
-
+                    <span>Pay when your order arrives.</span>
                   </div>
-
                 </label>
 
                 {/* JazzCash */}
 
                 <label
                   className={`payment-method-option ${
-                    paymentMethod === "JazzCash"
-                      ? "active"
-                      : ""
+                    paymentMethod === "JazzCash" ? "active" : ""
                   }`}
                 >
-
                   <input
                     type="radio"
                     name="paymentMethod"
                     value="JazzCash"
-                    checked={
-                      paymentMethod === "JazzCash"
-                    }
-                    onChange={
-                      handlePaymentMethodChange
-                    }
+                    checked={paymentMethod === "JazzCash"}
+                    onChange={handlePaymentMethodChange}
                   />
 
                   <div className="payment-method-content">
+                    <strong>JazzCash</strong>
 
-                    <strong>
-                      JazzCash
-                    </strong>
-
-                    <span>
-                      Pay using your JazzCash account.
-                    </span>
-
+                    <span>Pay using your JazzCash account.</span>
                   </div>
-
                 </label>
 
                 {/* Bank Transfer */}
 
                 <label
                   className={`payment-method-option ${
-                    paymentMethod ===
-                    "Bank Transfer"
+                    paymentMethod === "Bank Transfer"
                       ? "active"
                       : ""
                   }`}
                 >
-
                   <input
                     type="radio"
                     name="paymentMethod"
                     value="Bank Transfer"
                     checked={
-                      paymentMethod ===
-                      "Bank Transfer"
+                      paymentMethod === "Bank Transfer"
                     }
-                    onChange={
-                      handlePaymentMethodChange
-                    }
+                    onChange={handlePaymentMethodChange}
                   />
 
                   <div className="payment-method-content">
+                    <strong>Bank Transfer</strong>
 
-                    <strong>
-                      Bank Transfer
-                    </strong>
-
-                    <span>
-                      Pay through bank / ATM transfer.
-                    </span>
-
+                    <span>Pay through bank / ATM transfer.</span>
                   </div>
-
                 </label>
-
               </div>
 
-              {/* =========================
-                  JAZZCASH DETAILS
-              ========================= */}
+              {/* JAZZCASH DETAILS */}
 
               {paymentMethod === "JazzCash" && (
-
                 <div className="payment-details">
-
-                  <h3>
-                    JazzCash Payment Details
-                  </h3>
+                  <h3>JazzCash Payment Details</h3>
 
                   <div className="checkout-form-group">
-
-                    <label>
-                      JazzCash Account Number
-                    </label>
+                    <label>JazzCash Account Number</label>
 
                     <input
                       type="tel"
                       name="accountNumber"
-                      value={
-                        paymentDetails.accountNumber
-                      }
-                      onChange={
-                        handlePaymentDetailsChange
-                      }
+                      value={paymentDetails.accountNumber}
+                      onChange={handlePaymentDetailsChange}
                       placeholder="03XX-XXXXXXX"
                       required
                     />
-
                   </div>
 
                   <div className="checkout-form-group">
-
-                    <label>
-                      Transaction ID
-                    </label>
+                    <label>Transaction ID</label>
 
                     <input
                       type="text"
                       name="transactionId"
-                      value={
-                        paymentDetails.transactionId
-                      }
-                      onChange={
-                        handlePaymentDetailsChange
-                      }
+                      value={paymentDetails.transactionId}
+                      onChange={handlePaymentDetailsChange}
                       placeholder="Enter transaction ID"
                       required
                     />
-
                   </div>
-
                 </div>
-
               )}
 
-              {/* =========================
-                  BANK TRANSFER DETAILS
-              ========================= */}
+              {/* BANK TRANSFER DETAILS */}
 
-              {paymentMethod ===
-                "Bank Transfer" && (
-
+              {paymentMethod === "Bank Transfer" && (
                 <div className="payment-details">
-
-                  <h3>
-                    Bank Transfer Details
-                  </h3>
+                  <h3>Bank Transfer Details</h3>
 
                   <div className="checkout-form-group">
-
-                    <label>
-                      Bank Name
-                    </label>
+                    <label>Bank Name</label>
 
                     <input
                       type="text"
                       name="bankName"
-                      value={
-                        paymentDetails.bankName
-                      }
-                      onChange={
-                        handlePaymentDetailsChange
-                      }
+                      value={paymentDetails.bankName}
+                      onChange={handlePaymentDetailsChange}
                       placeholder="Enter bank name"
                       required
                     />
-
                   </div>
 
                   <div className="checkout-form-group">
-
-                    <label>
-                      Account Title
-                    </label>
+                    <label>Account Title</label>
 
                     <input
                       type="text"
                       name="accountTitle"
-                      value={
-                        paymentDetails.accountTitle
-                      }
-                      onChange={
-                        handlePaymentDetailsChange
-                      }
+                      value={paymentDetails.accountTitle}
+                      onChange={handlePaymentDetailsChange}
                       placeholder="Enter account title"
                       required
                     />
-
                   </div>
 
                   <div className="checkout-form-group">
-
-                    <label>
-                      Transaction ID
-                    </label>
+                    <label>Transaction ID</label>
 
                     <input
                       type="text"
                       name="transactionId"
-                      value={
-                        paymentDetails.transactionId
-                      }
-                      onChange={
-                        handlePaymentDetailsChange
-                      }
+                      value={paymentDetails.transactionId}
+                      onChange={handlePaymentDetailsChange}
                       placeholder="Enter transaction ID"
                       required
                     />
-
                   </div>
-
                 </div>
-
               )}
-
             </div>
 
             {/* Error */}
 
-            {error && (
-              <div className="checkout-error">
-                {error}
-              </div>
-            )}
+            {error && <div className="checkout-error">{error}</div>}
 
             {/* Place Order */}
 
@@ -680,29 +506,18 @@ function Checkout() {
               className="place-order-btn"
               disabled={loading}
             >
-              {loading
-                ? "Placing Order..."
-                : "Place Order"}
+              {loading ? "Placing Order..." : "Place Order"}
             </button>
-
           </form>
-
         </div>
 
-        {/* =========================
-            ORDER SUMMARY
-        ========================= */}
+        {/* ORDER SUMMARY */}
 
         <div className="checkout-summary">
-
-          <h2>
-            Order Summary
-          </h2>
+          <h2>Order Summary</h2>
 
           <div className="checkout-items">
-
-            {cart.map((item) => {
-
+            {cart.map((item, index) => {
               const imageUrl = item.image
                 ? item.image.startsWith("http")
                   ? item.image
@@ -712,27 +527,16 @@ function Checkout() {
               return (
                 <div
                   className="checkout-item"
-                  key={item.id}
+                  key={item.id || item._id || index}
                 >
-
                   <div className="checkout-item-image">
-
-                    <img
-                      src={imageUrl}
-                      alt={item.name}
-                    />
-
+                    <img src={imageUrl} alt={item.name} />
                   </div>
 
                   <div className="checkout-item-info">
+                    <h4>{item.name}</h4>
 
-                    <h4>
-                      {item.name}
-                    </h4>
-
-                    <p>
-                      Qty: {item.cartQuantity}
-                    </p>
+                    <p>Qty: {item.cartQuantity}</p>
 
                     <strong>
                       Rs.{" "}
@@ -741,42 +545,26 @@ function Checkout() {
                         Number(item.cartQuantity)
                       ).toLocaleString()}
                     </strong>
-
                   </div>
-
                 </div>
               );
             })}
-
           </div>
 
           {/* Subtotal */}
 
           <div className="checkout-total-row">
+            <span>Subtotal</span>
 
-            <span>
-              Subtotal
-            </span>
-
-            <span>
-              Rs.{" "}
-              {subtotal.toLocaleString()}
-            </span>
-
+            <span>Rs. {subtotal.toLocaleString()}</span>
           </div>
 
           {/* Delivery */}
 
           <div className="checkout-total-row">
+            <span>Delivery</span>
 
-            <span>
-              Delivery
-            </span>
-
-            <span>
-              Free
-            </span>
-
+            <span>Free</span>
           </div>
 
           <hr />
@@ -784,22 +572,12 @@ function Checkout() {
           {/* Total */}
 
           <div className="checkout-grand-total">
+            <span>Total</span>
 
-            <span>
-              Total
-            </span>
-
-            <strong>
-              Rs.{" "}
-              {total.toLocaleString()}
-            </strong>
-
+            <strong>Rs. {total.toLocaleString()}</strong>
           </div>
-
         </div>
-
       </div>
-
     </div>
   );
 }
