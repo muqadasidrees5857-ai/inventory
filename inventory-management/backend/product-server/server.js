@@ -496,6 +496,44 @@ app.put("/api/orders/:id/status", async (req, res) => {
 });
 
 // =====================================================
+// AUTH REGISTER ROUTE
+// =====================================================
+
+app.post("/api/auth/register", async (req, res) => {
+  try {
+    const { email, password, name } = req.body;
+
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { name },
+      },
+    });
+
+    if (error) {
+      console.error("SUPABASE REGISTER ERROR:", error);
+      return res.status(400).json({
+        success: false,
+        message: error.message,
+      });
+    }
+
+    return res.status(201).json({
+      success: true,
+      message: "User registered successfully!",
+      user: data.user,
+    });
+  } catch (error) {
+    console.error("REGISTER EXCEPTION:", error);
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+});
+
+// =====================================================
 // START SERVER
 // =====================================================
 
