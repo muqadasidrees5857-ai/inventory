@@ -18,7 +18,13 @@ app.use(
   cors({
     origin: "*",
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "Cache-Control", "Pragma", "Expires"],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "Cache-Control",
+      "Pragma",
+      "Expires",
+    ],
   })
 );
 
@@ -99,6 +105,7 @@ app.get("/api/products", async (req, res) => {
 
     if (error) {
       console.error("SUPABASE GET PRODUCTS ERROR:", error);
+
       return res.status(500).json({
         success: false,
         message: error.message,
@@ -111,6 +118,7 @@ app.get("/api/products", async (req, res) => {
     });
   } catch (error) {
     console.error("GET PRODUCTS EXCEPTION:", error);
+
     return res.status(500).json({
       success: false,
       message: error.message,
@@ -141,6 +149,7 @@ app.get("/api/products/:id", async (req, res) => {
 
     if (error) {
       console.error("GET SINGLE PRODUCT ERROR:", error);
+
       return res.status(404).json({
         success: false,
         message: "Product not found.",
@@ -153,6 +162,7 @@ app.get("/api/products/:id", async (req, res) => {
     });
   } catch (error) {
     console.error("GET SINGLE PRODUCT EXCEPTION:", error);
+
     return res.status(500).json({
       success: false,
       message: error.message,
@@ -172,7 +182,13 @@ app.post(
     try {
       console.log("ADD PRODUCT REQUEST:", req.body);
 
-      const { name, category, price, quantity, supplier } = req.body;
+      const {
+        name,
+        category,
+        price,
+        quantity,
+        supplier,
+      } = req.body;
 
       if (
         !name ||
@@ -214,6 +230,7 @@ app.post(
 
       if (error) {
         console.error("SUPABASE ADD PRODUCT ERROR:", error);
+
         return res.status(500).json({
           success: false,
           message: error.message,
@@ -229,6 +246,7 @@ app.post(
       });
     } catch (error) {
       console.error("ADD PRODUCT EXCEPTION:", error);
+
       return res.status(500).json({
         success: false,
         message: error.message,
@@ -256,7 +274,13 @@ app.put(
         });
       }
 
-      const { name, category, price, quantity, supplier } = req.body;
+      const {
+        name,
+        category,
+        price,
+        quantity,
+        supplier,
+      } = req.body;
 
       const updateData = {
         name,
@@ -279,6 +303,7 @@ app.put(
 
       if (error) {
         console.error("SUPABASE UPDATE PRODUCT ERROR:", error);
+
         return res.status(500).json({
           success: false,
           message: error.message,
@@ -299,6 +324,7 @@ app.put(
       });
     } catch (error) {
       console.error("UPDATE PRODUCT EXCEPTION:", error);
+
       return res.status(500).json({
         success: false,
         message: error.message,
@@ -331,6 +357,7 @@ app.delete("/api/products/:id", async (req, res) => {
 
     if (error) {
       console.error("SUPABASE DELETE PRODUCT ERROR:", error);
+
       return res.status(500).json({
         success: false,
         message: error.message,
@@ -351,6 +378,7 @@ app.delete("/api/products/:id", async (req, res) => {
     });
   } catch (error) {
     console.error("DELETE PRODUCT EXCEPTION:", error);
+
     return res.status(500).json({
       success: false,
       message: error.message,
@@ -371,6 +399,7 @@ app.get("/api/orders", async (req, res) => {
 
     if (error) {
       console.error("SUPABASE GET ORDERS ERROR:", error);
+
       return res.status(500).json({
         success: false,
         message: error.message,
@@ -389,6 +418,7 @@ app.get("/api/orders", async (req, res) => {
     });
   } catch (error) {
     console.error("GET ORDERS EXCEPTION:", error);
+
     return res.status(500).json({
       success: false,
       message: error.message,
@@ -438,6 +468,7 @@ app.post("/api/orders", async (req, res) => {
 
     if (error) {
       console.error("SUPABASE PLACE ORDER ERROR:", error);
+
       return res.status(400).json({
         success: false,
         message: error.message,
@@ -451,6 +482,7 @@ app.post("/api/orders", async (req, res) => {
     });
   } catch (error) {
     console.error("PLACE ORDER EXCEPTION:", error);
+
     return res.status(500).json({
       success: false,
       message: error.message,
@@ -475,6 +507,7 @@ app.put("/api/orders/:id/status", async (req, res) => {
 
     if (error) {
       console.error("UPDATE STATUS ERROR:", error);
+
       return res.status(400).json({
         success: false,
         message: error.message,
@@ -488,6 +521,53 @@ app.put("/api/orders/:id/status", async (req, res) => {
     });
   } catch (error) {
     console.error("UPDATE STATUS EXCEPTION:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+});
+
+// =====================================================
+// AUTH LOGIN ROUTE
+// =====================================================
+
+app.post("/api/auth/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Email and password are required.",
+      });
+    }
+
+    const { data, error } =
+      await supabase.auth.signInWithPassword({
+        email: email.trim().toLowerCase(),
+        password,
+      });
+
+    if (error) {
+      console.error("SUPABASE LOGIN ERROR:", error);
+
+      return res.status(401).json({
+        success: false,
+        message: error.message,
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Login successful!",
+      user: data.user,
+      session: data.session,
+    });
+  } catch (error) {
+    console.error("LOGIN EXCEPTION:", error);
+
     return res.status(500).json({
       success: false,
       message: error.message,
@@ -507,12 +587,15 @@ app.post("/api/auth/register", async (req, res) => {
       email,
       password,
       options: {
-        data: { name },
+        data: {
+          name,
+        },
       },
     });
 
     if (error) {
       console.error("SUPABASE REGISTER ERROR:", error);
+
       return res.status(400).json({
         success: false,
         message: error.message,
@@ -526,6 +609,7 @@ app.post("/api/auth/register", async (req, res) => {
     });
   } catch (error) {
     console.error("REGISTER EXCEPTION:", error);
+
     return res.status(500).json({
       success: false,
       message: error.message,
